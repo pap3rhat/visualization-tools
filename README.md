@@ -1,2 +1,2 @@
 # visualization-tools
-Repositoty for bachelors thesis. 
+Repository for bachelors thesis. 
