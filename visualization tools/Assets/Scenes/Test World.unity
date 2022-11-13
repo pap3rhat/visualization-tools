@@ -1094,7 +1094,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90d674fb7922f864ba6f73da6c568f6c, type: 3}
   m_Name: 
@@ -1102,12 +1102,13 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: 8fcf86b69ecb94c489f8e6a165b8b0f0, type: 2}
   kernelSize: 5
   kernel:
-  - 0.0625
-  - 0.25
-  - 0.375
-  - 0.25
-  - 0.0625
-  offset: feffffffffffffff000000000100000002000000
+  - 0.22702703
+  - 0.3162162
+  - 0.07027027
+  offset:
+  - 0
+  - 1.3846154
+  - 3.2307692
   highPass: 1
 --- !u!1 &1114665978
 GameObject:

@@ -29,9 +29,9 @@ Shader "Optical/HighPassFilter"
 
 	float4 _MainTex_TexelSize; // contains texture size information for _MainTex
 
-	int _KernelSize; // size fo the kernel
+	int _FinalKernelSize; // size of ther kernel after linear sampling in consideration that first and second half are the same
 	StructuredBuffer<float> _Kernel; // kernel values
-	StructuredBuffer<int> _Offset; // offset values
+	StructuredBuffer<float> _Offset; // offset values
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -49,10 +49,11 @@ Shader "Optical/HighPassFilter"
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	fixed4 fragH(v2f IN) : SV_Target
 	{
-		float4 col = 0;
-		for (int i = 0; i < _KernelSize; i++) 
+		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
+		for (int i = 1; i < _FinalKernelSize; i++)
 		{
 			col += tex2D(_MainTex, IN.uv + float2(_Offset[i] * _MainTex_TexelSize.x,0)) * _Kernel[i];
+			col += tex2D(_MainTex, IN.uv - float2(_Offset[i] * _MainTex_TexelSize.x, 0)) * _Kernel[i];
 		}
 		return col;
 	}
@@ -62,10 +63,11 @@ Shader "Optical/HighPassFilter"
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	fixed4 fragV(v2f IN) : SV_Target
 	{
-		float4 col = 0;
-		for (int i = 0; i < _KernelSize; i++) 
+		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
+		for (int i = 1; i < _FinalKernelSize; i++)
 		{
 			col += tex2D(_MainTex, IN.uv + float2(0, _Offset[i] * _MainTex_TexelSize.y)) * _Kernel[i];
+			col += tex2D(_MainTex, IN.uv - float2(0, _Offset[i] * _MainTex_TexelSize.y)) * _Kernel[i];
 		}
 		return col;
 	}
