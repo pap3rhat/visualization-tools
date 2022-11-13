@@ -10,13 +10,15 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float speed = 31f;
 
+    // method that is being called every frame
     private void Update()
     {
-        float horIn = Input.GetAxis("Horizontal");
-        float verIn = Input.GetAxis("Vertical");
+        // getting user input
+        float horIn = Input.GetAxis("Horizontal"); // horizontal input
+        float verIn = Input.GetAxis("Vertical"); // vertical input
 
-        Vector3 move = transform.right * horIn + transform.forward * verIn;
+        Vector3 move = transform.right * horIn + transform.forward * verIn; // motion vector in correct direction
 
-        controller.Move(move*speed*Time.deltaTime);
+        controller.Move(move*speed*Time.deltaTime); // moving player
     }
 }
