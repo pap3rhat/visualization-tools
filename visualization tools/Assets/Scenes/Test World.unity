@@ -1100,7 +1100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 8fcf86b69ecb94c489f8e6a165b8b0f0, type: 2}
-  kernelSize: 5
+  kernelSize: 9
   kernel:
   - 0.22702703
   - 0.3162162

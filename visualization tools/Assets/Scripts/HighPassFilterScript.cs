@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine;
 
 
-[ExecuteInEditMode]
 public class HighPassFilterScript : MonoBehaviour
 {
     private const int DEFAULT_KERNEL_SIZE = 9;
