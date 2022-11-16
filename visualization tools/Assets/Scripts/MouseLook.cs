@@ -14,11 +14,13 @@ public class MouseLook : MonoBehaviour
 
     private float xRot;
 
-    // mtehod that is being called once script is enabled; before first Update()-call
+    // metehod that is being called once script is enabled; before first Update()-call
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // TODO: check if ther is a way to use UI while locked 
+
+       // Cursor.lockState = CursorLockMode.Locked;
+       // Cursor.visible = false;
     }
 
     // method that is being called every frame
