@@ -20,7 +20,15 @@ Shader "Optical/MotionField"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+	// used when motion field is applied after high-pass filter
+	sampler2D _Filtered; // texture after high-pass filter got applied
+	float _Threshold; // determines how high intensity has to be in order to show up on the final image
 
+	// by unity generated texture that contains information about the 2D movement of each point in clip space between the last frame and the current frame, based on its 3D-movement in the world relative to the camera
+	sampler2D_half _CameraMotionVectorsTexture;
+
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
 	// method that converts 2D vector into a color (in HSV color space)
 	float3 motionToHSV(float2 motion)
 	{
@@ -80,6 +88,14 @@ Shader "Optical/MotionField"
 
 		return rgb;
 	}
+
+	// method that converts a color into a grayscale value
+	// fomrula is the same as OpenCV uses: https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#void%20cvtColor%28InputArray%20src,%20OutputArray%20dst,%20int%20code,%20int%20dstCn%29
+	float intensity(float4 col)
+	{
+		return 0.299 * col.r + 0.587 * col.g + 0.114 * col.b;
+	}
+
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
 
 	// vertex shader; converts 3D world-coordinates of vertex into 2D camera-coordinates
@@ -92,9 +108,6 @@ Shader "Optical/MotionField"
 	}
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	// by unity generated texture that contains information about the 2D movement of each point in clip space between the last frame and the current frame, based on its 3D-movement in the world relative to the camera
-	sampler2D_half _CameraMotionVectorsTexture;
 
 	// fragment shader; converts motionVector for each pixel into a color that will be displayed
 	fixed4 frag(v2f IN) : SV_Target
@@ -113,9 +126,41 @@ Shader "Optical/MotionField"
 		return float4(motionRGB,1);
 	}
 
-	ENDCG
-
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// fragment shader; converts motionVector for each pixel into a color; will be displayed where high-pass filter found edges(high image frequencies)
+	fixed4 fragAHP(v2f IN) : SV_Target
+	{
+		// motion in x-direction is stored in the textures green channel, motion in y-direction is stored in the textures red channel
+		float r = (tex2D(_CameraMotionVectorsTexture, IN.uv).r * 1000); // motions are between -1 and 1, so we need to amplify them here otherwise they will not be visible
+		float g = (tex2D(_CameraMotionVectorsTexture, IN.uv).g * 1000);
+
+		float2 motion;
+		motion.x = g;
+		motion.y = r;
+
+		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
+		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color
+
+		// convert curretn pixel into intensity value (grayscale value)
+		float intent = intensity(tex2D(_Filtered, IN.uv));
+
+		// if intensity is high enough (high frequency in image got detected) show motion field colors; otherwise just show black
+		if (intent >= _Threshold) 
+		{
+			return float4(motionRGB, 1);
+		}
+		else
+		{
+			return float4(0, 0, 0, 1);
+		}
+	
+	
+	}
+
+		ENDCG
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	SubShader
 	{
@@ -127,6 +172,14 @@ Shader "Optical/MotionField"
 			#pragma fragment frag
 			ENDCG
 		}
-		   
+
+			// 1: display motion field with colors where high pass filter found edges
+			Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment fragAHP
+			ENDCG
+		}
 	}
 }
