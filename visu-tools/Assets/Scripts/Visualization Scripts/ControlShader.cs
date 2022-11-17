@@ -23,9 +23,10 @@ public class ControlShader : MonoBehaviour
         None = -1,
         Motion = 0,
         Blur = 1,
-        HighPass = 2,
-        HighPassOnMotion = 3,
-        MotionOnHighPass = 4
+        Sharpening = 2,
+        HighPass = 3,
+        HighPassOnMotion = 4,
+        MotionOnHighPass = 5
     }
 
     [SerializeField] private ShaderActive shaderActive;
@@ -72,6 +73,10 @@ public class ControlShader : MonoBehaviour
                 break;
             case ShaderActive.Blur:
                 basicImageFilterScript.CurrentFilterMethod = BasicImageFilter.FilterMethod.Blur;
+                basicImageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
+                break;
+            case ShaderActive.Sharpening:
+                basicImageFilterScript.CurrentFilterMethod = BasicImageFilter.FilterMethod.Sharpening;
                 basicImageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
                 break;
             case ShaderActive.HighPass:

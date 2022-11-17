@@ -15,7 +15,8 @@ public class BasicImageFilter
     {
         BlurH = 0,
         BlurV = 1,
-        HighPass = 2
+        HighPass = 2,
+        Sharpening = 3
     };
 
     public enum FilterMethod // list of all available basic filter methods
@@ -67,6 +68,9 @@ public class BasicImageFilter
     private List<float> offset;
     private ComputeBuffer kernelBuf, offsetBuf;
 
+    
+    private const float sharpeningFactor = 0.85f; // constant for image sharpening (could be made variable and set by user)
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
 
@@ -109,6 +113,19 @@ public class BasicImageFilter
                 RenderTexture.ReleaseTemporary(tmp3);
                 break;
             case FilterMethod.Sharpening: // sharpen the image
+                material.SetTexture("_First", source); // setting current frame for shader to use
+                material.SetFloat("_SharpeningFactor", sharpeningFactor);
+
+                var tmp4 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for horizontal blur pass
+                var tmp5 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for vertical blur pass
+
+                Graphics.Blit(source, tmp4, material, (int)Pass.BlurH); // horizontal blur
+                Graphics.Blit(tmp4, tmp5, material, (int)Pass.BlurV); // vertical blur
+                Graphics.Blit(tmp5, destination, material, (int)Pass.Sharpening); // applying high pass filter effect to final (fullscreen) image
+
+                // cleaning up
+                RenderTexture.ReleaseTemporary(tmp4);
+                RenderTexture.ReleaseTemporary(tmp5);
                 break;
         }
     }

@@ -33,6 +33,8 @@ Shader "Optical/BasicImageFilter"
 	StructuredBuffer<float> _Kernel; // kernel values
 	StructuredBuffer<float> _Offset; // offset values
 
+	float _SharpeningFactor; // determines 'strength' of sharpening
+
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Vertex shader; converts 3D world-coordinates of vertex into 2D camera coordinates
@@ -80,6 +82,14 @@ Shader "Optical/BasicImageFilter"
 		return tex2D(_First, IN.uv) - tex2D(_MainTex, IN.uv);
 	}
 
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Fragment shader; detemines final color for each pixel by subtracting blurred frame from "original" frame, weighting it and then adding it back to the original image (realizes image sharpening)
+	fixed4 fragSH(v2f IN) : SV_Target
+	{
+		return tex2D(_First, IN.uv) + _SharpeningFactor * (tex2D(_First, IN.uv) - tex2D(_MainTex, IN.uv));
+	}
+
 	ENDCG
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,6 +125,16 @@ Shader "Optical/BasicImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragHPF
+
+			ENDCG
+		}
+
+		// 3: image sharpening
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment fragSH
 
 			ENDCG
 		}
