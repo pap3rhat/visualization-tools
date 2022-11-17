@@ -17,11 +17,6 @@ public class CSVRecorder : MonoBehaviour
         {
             RecordCurrent();
         }
-
-        if (Time.frameCount == 3000) // for the time being stops after 300 frames
-        {
-            StopRecording();
-        }
     }
 
     // sets up recording of csv file

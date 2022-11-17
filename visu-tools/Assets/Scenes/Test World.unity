@@ -198,6 +198,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.x
       value: 70
       objectReference: {fileID: 0}
+    - target: {fileID: 6443985485358601396, guid: 69df48a3a71c7284a9f4dc5f202d3134, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10.1484
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 69df48a3a71c7284a9f4dc5f202d3134, type: 3}
 --- !u!1001 &1011834436005922637
@@ -207,6 +211,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1011834436931365429, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1011834437878611285, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
       propertyPath: m_Name
       value: Player
@@ -255,5 +263,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8256368241693451320, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
+      propertyPath: shaderActive
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8256368241693451320, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
+      propertyPath: filterMaterial
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8256368241693451320, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
+      propertyPath: basicImageFilteringMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 8fcf86b69ecb94c489f8e6a165b8b0f0, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}

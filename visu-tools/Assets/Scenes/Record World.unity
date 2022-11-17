@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 93333064}
   - component: {fileID: 93333065}
+  - component: {fileID: 93333066}
   m_Layer: 0
   m_Name: Scene Control
   m_TagString: Untagged
@@ -165,6 +166,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28db55b01b7c5144c850983587a90ef7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &93333066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93333063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 959e6eece9a397643868b98dfeb88843, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &497114110
@@ -311,7 +324,7 @@ GameObject:
   - component: {fileID: 1354214983}
   m_Layer: 5
   m_Name: Play/Stop Button
-  m_TagString: Untagged
+  m_TagString: Record Button
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -381,9 +394,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 93333065}
-        m_TargetAssemblyTypeName: CSVRecorder, Assembly-CSharp
-        m_MethodName: StartRecording
+      - m_Target: {fileID: 93333066}
+        m_TargetAssemblyTypeName: StartStopRecording, Assembly-CSharp
+        m_MethodName: ButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -443,7 +456,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 959e6eece9a397643868b98dfeb88843, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btn: {fileID: 0}
 --- !u!1 &1607656212
 GameObject:
   m_ObjectHideFlags: 0
@@ -615,7 +627,7 @@ GameObject:
   - component: {fileID: 2141507029}
   m_Layer: 5
   m_Name: Text
-  m_TagString: Untagged
+  m_TagString: Record Button Text
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
