@@ -1,4 +1,4 @@
-Shader "Optical/BasicImageFilter"
+Shader "Optical/ImageFilter"
 {
 	Properties
 	{

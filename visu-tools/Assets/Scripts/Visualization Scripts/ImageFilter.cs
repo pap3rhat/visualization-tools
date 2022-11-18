@@ -10,7 +10,7 @@ using UnityEngine;
  * Sharpen: Sharpens the image by adding the images high frequencies on top of it.
  * The 'strength' of each effect is determined by the kernel size. The bigger the kernel the stronger the effect.
  */
-public class BasicImageFilter
+public class ImageFilter
 {
     // --- GENERAL DATA ---
     private enum Pass // determines which passes in shader need to be used
@@ -135,7 +135,7 @@ public class BasicImageFilter
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
 
-    public BasicImageFilter()
+    public ImageFilter()
     {
         kernelSize = DEFAULT_KERNEL_SIZE; // init kernelSize
 

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BasicImageFilter
+  m_Name: ImageFilter
   m_Shader: {fileID: 4800000, guid: 5aebee6b1a810944eb1221008a04b693, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
