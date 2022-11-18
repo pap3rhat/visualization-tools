@@ -24,8 +24,8 @@ Shader "Optical/BasicImageFilter"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+	// --- GENERAL DATA ---
 	sampler2D _MainTex; // main diffuse texture
-	sampler2D _First; // "original" frame
 
 	float4 _MainTex_TexelSize; // contains texture size information for _MainTex
 
@@ -33,6 +33,13 @@ Shader "Optical/BasicImageFilter"
 	StructuredBuffer<float> _Kernel; // kernel values
 	StructuredBuffer<float> _Offset; // offset values
 
+	// --- DATA FOR RADIAL BLUR ---
+	float _OriginX; // determins x-coordinate of blur origin
+	float _OriginY; // determins y-coordiante of blur origin
+	float _Scale; // scales the strength of the blur effect
+
+	// --- DATA FOR HIGH-PASS AND SHARPENING ---
+	sampler2D _First; // "original" frame
 	float _SharpeningFactor; // determines 'strength' of sharpening
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -49,13 +56,34 @@ Shader "Optical/BasicImageFilter"
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// here: neighbors on line given by relative position between origin and pixel
+	fixed4 fragR(v2f IN) : SV_Target
+	{
+		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
+
+		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0]; // init final color
+
+		for (int i = 1; i < _FinalKernelSize; i++)
+		{
+			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; teh farther the point is away from the origin the more it is blurred
+			col += tex2D(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
+		}
+
+		return col;
+	}
+
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// here: neighbors on horizontal line through pixel
 	fixed4 fragH(v2f IN) : SV_Target
 	{
 		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
-			col += tex2D(_MainTex, IN.uv + float2(_Offset[i] * _MainTex_TexelSize.x,0)) * _Kernel[i];
-			col += tex2D(_MainTex, IN.uv - float2(_Offset[i] * _MainTex_TexelSize.x, 0)) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv + float2(_Offset[i] * _MainTex_TexelSize.x,0))) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv - float2(_Offset[i] * _MainTex_TexelSize.x, 0))) * _Kernel[i];
 		}
 		return col;
 	}
@@ -63,13 +91,14 @@ Shader "Optical/BasicImageFilter"
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// here: neighbors on vertical line through pixel
 	fixed4 fragV(v2f IN) : SV_Target
 	{
 		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
-			col += tex2D(_MainTex, IN.uv + float2(0, _Offset[i] * _MainTex_TexelSize.y)) * _Kernel[i];
-			col += tex2D(_MainTex, IN.uv - float2(0, _Offset[i] * _MainTex_TexelSize.y)) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv + float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv - float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
 		}
 		return col;
 	}
@@ -99,7 +128,17 @@ Shader "Optical/BasicImageFilter"
 		// No culling or depth
 		Cull Off ZWrite Off ZTest Always
 
-		// 0: horizontal seperable gaussian blur
+		// 0: radial gaussian blur
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment fragR
+
+			ENDCG
+		}
+
+		// 1: horizontal seperable gaussian blur
 		Pass
 		{
 			CGPROGRAM
@@ -109,7 +148,7 @@ Shader "Optical/BasicImageFilter"
 			ENDCG
 		}
 
-		// 1: vertical seperable guassian blur
+		// 2: vertical seperable guassian blur
 		Pass
 		{
 			CGPROGRAM
@@ -119,7 +158,7 @@ Shader "Optical/BasicImageFilter"
 			ENDCG
 		}
 
-		// 2: high-pass filter
+		// 3: high-pass filter
 		Pass
 		{
 			CGPROGRAM
@@ -129,7 +168,7 @@ Shader "Optical/BasicImageFilter"
 			ENDCG
 		}
 
-		// 3: image sharpening
+		// 4: image sharpening
 		Pass
 		{
 			CGPROGRAM
