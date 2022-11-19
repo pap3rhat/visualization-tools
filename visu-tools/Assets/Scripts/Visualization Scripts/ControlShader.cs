@@ -8,19 +8,23 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class ControlShader : MonoBehaviour
 {
+    // setup for shader
+    [Tooltip("Move camera to which this script is attached in here.")]  [SerializeField] private Camera cam;
+    [Tooltip("Move material named 'MotionField' in here.")]  [SerializeField] private Material motionFieldMaterial;
+    [Tooltip("Move material named 'ImageFilter' in here.")] [SerializeField] private Material imageFilterMaterial;
+
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
-    [SerializeField] private Camera cam;
-    [SerializeField] private Material motionFieldMaterial;
-    [SerializeField] private float threshold;
+    [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")] 
+    [Range(0f, 0.25f)] [SerializeField] private float threshold;
 
     // necessary information for all shaders containing some kind of filtering (radial blur, guassian blur, high-pass filter, image sharpening)
     private ImageFilter imageFilterScript;
-    [SerializeField] private Material basicImageFilterMaterial;
-    [SerializeField] private int kernelSize;
-    [SerializeField] private float radialBlurOriginX, radialBlurOriginY, scale;
+    [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
+    [Tooltip("Offset of origin of radial blur effect.")]  [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
+    [Tooltip("Strength of radial blur effect.")]  [Range(0f, 15f)] [SerializeField] private float scale;
 
-    private enum ShaderActive
+    public enum ShaderActive
     {
         None = -1,
         RadialBlur = 0,
@@ -32,7 +36,7 @@ public class ControlShader : MonoBehaviour
         MotionOnHighPass = 6
     }
 
-    [SerializeField] private ShaderActive shaderActive;
+    [Tooltip("Which image effect should be applied.")] public ShaderActive shaderActive;
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -52,7 +56,7 @@ public class ControlShader : MonoBehaviour
 
         // set-up for all shaders containing some kind of "basic" filtering
         imageFilterScript = new ImageFilter();
-        imageFilterScript.KernelSetUp(basicImageFilterMaterial);
+        imageFilterScript.KernelSetUp(imageFilterMaterial);
         kernelSize = imageFilterScript.KernelSize;
         radialBlurOriginX = imageFilterScript.OriginX;
         radialBlurOriginY = imageFilterScript.OriginY;
@@ -66,7 +70,7 @@ public class ControlShader : MonoBehaviour
         if (kernelSize != imageFilterScript.KernelSize && kernelSize % 2 != 0 && kernelSize >= ImageFilter.MIN_KERNEL_SIZE)
         {
             imageFilterScript.KernelSize = kernelSize;
-            imageFilterScript.KernelSetUp(basicImageFilterMaterial);
+            imageFilterScript.KernelSetUp(imageFilterMaterial);
         }
 
         // checking if origin for radial blur changed
@@ -102,19 +106,19 @@ public class ControlShader : MonoBehaviour
                 break;
             case ShaderActive.RadialBlur: // display a radial blur
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.Radial;
-                imageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
             case ShaderActive.GaussianBlur: // blur (low-pass filter) the image (remove high frequencies)
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.Blur;
-                imageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
             case ShaderActive.Sharpening: // sharpen the image (add high image frequencies on top of image)
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.Sharpening;
-                imageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
             case ShaderActive.HighPass: // high-pass filter the image (remove low frequencies)
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
-                imageFilterScript.RenderShader(source, destination, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
             case ShaderActive.Motion: // display motion field as colors
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.OnlyMotion;
@@ -125,13 +129,13 @@ public class ControlShader : MonoBehaviour
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.OnlyMotion;
                 motionScript.RenderShader(source, tmp, motionFieldMaterial);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
-                imageFilterScript.RenderShader(tmp, destination, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(tmp, destination, imageFilterMaterial);
                 RenderTexture.ReleaseTemporary(tmp);
                 break;
             case ShaderActive.MotionOnHighPass: // first extract high frquencies from image and then apply motion field colors on it
                 var tmp2 = RenderTexture.GetTemporary(source.width, source.height);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
-                imageFilterScript.RenderShader(source, tmp2, basicImageFilterMaterial);
+                imageFilterScript.RenderShader(source, tmp2, imageFilterMaterial);
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.MotionOnHighPass;
                 motionScript.RenderShader(tmp2, destination, motionFieldMaterial);
                 RenderTexture.ReleaseTemporary(tmp2);

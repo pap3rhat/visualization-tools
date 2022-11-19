@@ -3,7 +3,10 @@ guid: 9abdfb09f3080724cb1b1448c78d676b
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - cam: {instanceID: 0}
+  - motionFieldMaterial: {fileID: 2100000, guid: 6ba5624fbf5482346af797c33c80809d, type: 2}
+  - imageFilterMaterial: {fileID: 2100000, guid: 19229691b49c5ad4697ecc2608b0fdbe, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
