@@ -1,18 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FileList : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+/* This scriptable object holds all information about available files to choose from and which file is chosen. */
+// [CreateAssetMenu(fileName = "File List", menuName = "Replay/FileList")]
+public class FileList : ScriptableObject
+{
+    public List<TextAsset> files;
+    public int activeFileNumber;
+    public string activeFileName;
 }

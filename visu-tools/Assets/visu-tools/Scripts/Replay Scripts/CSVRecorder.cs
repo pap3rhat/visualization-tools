@@ -1,16 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
+/* Script that records positions and rotations of GameObject called player.
+ * Can be used if no other way of generating log-files exists in programm.
+ */
 public class CSVRecorder : MonoBehaviour
 {
-    private string filename = "";
-    private bool recording = false;
+    private string filename = ""; 
+    private bool recording = false; // do not start with recording yet
 
     private GameObject player;
 
-    // method that is being called after Update functions have been called
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /* Method that is being called after Update functions have been called */
     private void LateUpdate()
     {
         if (recording)
@@ -19,18 +22,21 @@ public class CSVRecorder : MonoBehaviour
         }
     }
 
-    // sets up recording of csv file
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- METHODS TO BE CALLED FROM OTHER PLACES (EG BUTTONS) ---
+
+    /*  Method that sets up recording of csv file */
     public void StartRecording()
     {
         player = GameObject.Find("Player"); // finding player in scene
 
-        if(player == null)
+        if (player == null)
         {
-            Debug.LogError("There needs to be a gameobject called 'Player' in the scene! Logging not on!", this); 
+            Debug.LogError("There needs to be a gameobject called 'Player' in the scene! Logging not on!", this);
             return;
         }
 
-        filename = Application.dataPath + "/Resources/logfile.csv"; // TODO: figure out how to name properly
+        filename = Application.dataPath + "/Resources/Log Files/logfile.csv"; // TODO: figure out how to name properly
 
         // maing sure flaot numbers are stored with a "." as a comma
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
@@ -38,7 +44,7 @@ public class CSVRecorder : MonoBehaviour
         System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
         TextWriter textWriter = new StreamWriter(filename, false); // if a file with current filename exists, override it; otherwise create a new file
-        textWriter.WriteLine("frame, xPos, yPos, zPos, xRot, yRot, zRot, wRot"); // csv header
+        textWriter.WriteLine("frame,pos_x,pos_y,pos_z,quat_x,quat_y,quat_z,quat_w"); // csv header
         textWriter.Close();
 
         recording = true; // start recording
@@ -49,17 +55,17 @@ public class CSVRecorder : MonoBehaviour
     {
         TextWriter textWriter = new StreamWriter(filename, true); // open file with filename and add to it
         textWriter.WriteLine($"{Time.frameCount}," +
-            $"{transform.position.x}," +
-            $"{transform.position.y}," +
-            $"{transform.position.z}," +
-            $"{transform.rotation.x}," +
-            $"{transform.rotation.y}," +
-            $"{transform.rotation.z}," +
-            $"{transform.rotation.w}");
+            $"{player.transform.position.x}," +
+            $"{player.transform.position.y}," +
+            $"{player.transform.position.z}," +
+            $"{player.transform.rotation.x}," +
+            $"{player.transform.rotation.y}," +
+            $"{player.transform.rotation.z}," +
+            $"{player.transform.rotation.w}");
         textWriter.Close();
     }
 
-    // stops recording
+    /* Method that stops recording */
     public void StopRecording()
     {
         recording = false;

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /* Script that co-ordinates all available shader (combinations).
@@ -9,20 +7,20 @@ using UnityEngine;
 public class ControlShader : MonoBehaviour
 {
     // setup for shader
-    [Tooltip("Move camera to which this script is attached in here.")]  [SerializeField] private Camera cam;
-    [Tooltip("Move material named 'MotionField' in here.")]  [SerializeField] private Material motionFieldMaterial;
+    [Tooltip("Move camera to which this script is attached in here.")] [SerializeField] private Camera cam;
+    [Tooltip("Move material named 'MotionField' in here.")] [SerializeField] private Material motionFieldMaterial;
     [Tooltip("Move material named 'ImageFilter' in here.")] [SerializeField] private Material imageFilterMaterial;
 
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
-    [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")] 
+    [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")]
     [Range(0f, 0.25f)] [SerializeField] private float threshold;
 
     // necessary information for all shaders containing some kind of filtering (radial blur, guassian blur, high-pass filter, image sharpening)
     private ImageFilter imageFilterScript;
     [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
-    [Tooltip("Offset of origin of radial blur effect.")]  [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
-    [Tooltip("Strength of radial blur effect.")]  [Range(0f, 15f)] [SerializeField] private float scale;
+    [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
+    [Tooltip("Strength of radial blur effect.")] [Range(0f, 15f)] [SerializeField] private float scale;
 
     public enum ShaderActive
     {
