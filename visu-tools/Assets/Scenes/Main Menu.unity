@@ -1068,6 +1068,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1286742139}
   - component: {fileID: 1286742138}
+  - component: {fileID: 1286742140}
   m_Layer: 0
   m_Name: Scene Control
   m_TagString: Untagged
@@ -1102,6 +1103,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1286742140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286742137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f320d3f58603f7e48ae6440a39906f2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fileList: {fileID: 11400000, guid: 59f53f5a2ec03f34f8cd6d85e56e9fea, type: 2}
+  activeFile: {fileID: 11400000, guid: 198798331c663a54e807b6328669b21e, type: 2}
+  subfolderPath: Log FIles
 --- !u!1 &1741382164
 GameObject:
   m_ObjectHideFlags: 0
@@ -1253,7 +1269,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1886342189}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1286742138}
+        m_TargetAssemblyTypeName: ChangeScene, Assembly-CSharp
+        m_MethodName: LoadScene
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Replay World
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1886342189
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,20 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class StartStopRecording : MonoBehaviour
+public class RecordingControl : MonoBehaviour
 {
-    private bool record = true; 
+    private bool record = true;
     private CSVRecorder recorder;
 
     private TMP_Text buttonText;
-
-    public void Start()
-    {
-        
-    }
 
     public void ButtonClicked()
     {

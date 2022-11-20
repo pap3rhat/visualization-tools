@@ -1,19 +1,59 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CSVPlayer : MonoBehaviour
 {
     private int frameIdx = 0; // which frame are we on? 
+    private bool start = false; // don't start replay unless it is specifically asked for
+    private bool pause = false; // don't pause
 
-    [SerializeField] private ActiveFile activeFile; // scriptableObject that contains position and rotation information for file that should currently be replayed
+    [Tooltip("Move scriptable object named 'Active File' in here.")] [SerializeField] private ActiveFile activeFile; // scriptableObject that contains position and rotation information for file that should currently be replayed
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- METHOD THAT NEEDS TO BE CALLED FROM ELSEWHERE TO CONTROL REPLAY ---
+
+    /* Method that starts the replay */
+    public void StartReplay()
+    {
+        start = true;
+        frameIdx = 0;
+    }
+
+    /* Method that pauses the replay */
+    public void PauseReplay()
+    {
+        pause = true;
+    }
+
+    /* Method that resumes replay after it was pasued. */
+    public void ResumeReplay()
+    {
+        pause = false;
+    }
+
+    /* Method that stops the replay
+     * In contrary to PauseReplay this method resets the replay to the beginning! 
+     */
+    public void StopReplay()
+    {
+        start = false;
+        frameIdx = 0;
+    }
+
+    /* Checks if the replay is still running.
+     * Returns true iff the replay is still running
+     * Returns fals iff the replay is done
+     */
+    public bool CheckRunning()
+    {
+        return start && frameIdx < activeFile.positions.Count - 1 && !pause;
+    }
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /* Method that is being called every frame */
-    void Update()
+    private void Update()
     {
-        if (frameIdx < activeFile.positions.Count - 1)
+        if (start && frameIdx < activeFile.positions.Count - 1 && !pause)
         {
             SetPosition(frameIdx);
         }
