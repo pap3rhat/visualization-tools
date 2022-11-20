@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/* Script that contains methods to replay/pause/resume/stop replay information in active file scriptable object.
+ * WARNING: In order to be frame rate independet the positions and rotations logged within the csv file (whos information is stored in sctive file scriptable object) hat to be recorded within fixedUpdate method!
+ */
 public class CSVPlayer : MonoBehaviour
 {
     private int frameIdx = 0; // which frame are we on? 
@@ -50,8 +53,8 @@ public class CSVPlayer : MonoBehaviour
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    /* Method that is being called every frame */
-    private void Update()
+    /* Method that is being called every fixed frame-rate frame */
+    private void FixedUpdate()
     {
         if (start && frameIdx < activeFile.positions.Count - 1 && !pause)
         {

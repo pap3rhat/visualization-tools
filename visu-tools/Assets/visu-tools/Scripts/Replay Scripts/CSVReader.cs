@@ -61,7 +61,7 @@ public class CSVReader
         }
 
         // setting up activeFile if wanted
-        if (setFirst)
+        if (setFirst && fileList.files.Count > 0)
         {
             SetActiveFile(0, readFirst);
         }

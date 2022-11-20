@@ -3,6 +3,7 @@ using System.IO;
 
 /* Script that records positions and rotations of GameObject called player.
  * Can be used if no other way of generating log-files exists in programm.
+ * WARNING: Your csv files have to be recorded within fixedUpdate!
  */
 public class CSVRecorder : MonoBehaviour
 {
@@ -13,8 +14,8 @@ public class CSVRecorder : MonoBehaviour
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    /* Method that is being called after Update functions have been called */
-    private void LateUpdate()
+    /* Method that is being called every fixed frame-rate frame */
+    private void FixedUpdate()
     {
         if (recording)
         {
