@@ -20,7 +20,7 @@ public class ControlShader : MonoBehaviour
     private ImageFilter imageFilterScript;
     [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
     [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
-    [Tooltip("Strength of radial blur effect.")] [Range(0f, 15f)] [SerializeField] private float scale;
+    [Tooltip("Strength of radial blur effect.")] [Range(0f, 50f)] [SerializeField] private float scale;
 
     public enum ShaderActive
     {

@@ -65,11 +65,11 @@ Shader "Optical/ImageFilter"
 
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
-			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; teh farther the point is away from the origin the more it is blurred
+			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; the farther the point is away from the origin the more it is blurred
 			col += tex2D(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
 			col += tex2D(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
 		}
-
+		
 		return col;
 	}
 

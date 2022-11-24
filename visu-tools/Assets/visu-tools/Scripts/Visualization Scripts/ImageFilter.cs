@@ -126,7 +126,7 @@ public class ImageFilter
             }
         }
     }
-    private const float DEFAULT_SCALE = 5f;
+    private const float DEFAULT_SCALE = 20f;
 
     // --- DATA FOR SHARPENING ---
     private const float sharpeningFactor = 0.85f; // constant for image sharpening (could be made variable and set by user)

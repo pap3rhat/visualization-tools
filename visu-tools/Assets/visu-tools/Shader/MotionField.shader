@@ -35,8 +35,8 @@ Shader "Optical/MotionField"
 		float v = 1; // no motion -> white
 		float lengthSquared = motion.x * motion.x + motion.y * motion.y;
 		float s = sqrt(lengthSquared / 2.0); // more motion-> higher saturation of color
-		float aCos = degrees(acos(motion.x / sqrt(lengthSquared)));
-		float h = motion.y > 0 ? aCos : 360 - aCos;
+		float aCos = degrees(acos(motion.y / sqrt(lengthSquared)));
+		float h = motion.x > 0 ? aCos : 360 - aCos;
 
 		float3 hsv;
 		hsv.x = h;
@@ -112,13 +112,12 @@ Shader "Optical/MotionField"
 	// fragment shader; converts motionVector for each pixel into a color that will be displayed
 	fixed4 frag(v2f IN) : SV_Target
 	{
-		// motion in x-direction is stored in the textures green channel, motion in y-direction is stored in the textures red channel
-		float r = (tex2D(_CameraMotionVectorsTexture, IN.uv).r * 1000); // motions are between -1 and 1, so we need to amplify them here otherwise they will not be visible
-		float g = (tex2D(_CameraMotionVectorsTexture, IN.uv).g * 1000);
-
+		// motion in x-direction is stored in the textures red channel, motion in y-direction is stored in the textures green channel
 		float2 motion;
-		motion.x = g;
-		motion.y = r;
+		motion.x = tex2D(_CameraMotionVectorsTexture, IN.uv).r;
+		motion.y = tex2D(_CameraMotionVectorsTexture, IN.uv).g;
+
+		motion *= _ScreenParams.xy;
 
 		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
 		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color
@@ -131,13 +130,12 @@ Shader "Optical/MotionField"
 	// fragment shader; converts motionVector for each pixel into a color; will be displayed where high-pass filter found edges(high image frequencies)
 	fixed4 fragAHP(v2f IN) : SV_Target
 	{
-		// motion in x-direction is stored in the textures green channel, motion in y-direction is stored in the textures red channel
-		float r = (tex2D(_CameraMotionVectorsTexture, IN.uv).r * 1000); // motions are between -1 and 1, so we need to amplify them here otherwise they will not be visible
-		float g = (tex2D(_CameraMotionVectorsTexture, IN.uv).g * 1000);
-
+		// motion in x-direction is stored in the textures red channel, motion in y-direction is stored in the textures green channel
 		float2 motion;
-		motion.x = g;
-		motion.y = r;
+		motion.x = tex2D(_CameraMotionVectorsTexture, IN.uv).r;
+		motion.y = tex2D(_CameraMotionVectorsTexture, IN.uv).g;
+
+		motion *= _ScreenParams.xy;
 
 		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
 		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color
@@ -154,13 +152,11 @@ Shader "Optical/MotionField"
 		{
 			return float4(0, 0, 0, 1);
 		}
-	
-	
 	}
 
-		ENDCG
+	ENDCG
 
-		//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	SubShader
 	{
