@@ -7,6 +7,7 @@ Shader "Optical/ImageFilter"
 
 	CGINCLUDE
 	#include "UnityCG.cginc"
+	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
 
 	// appdata to vertex shader
 	struct a2v
@@ -74,6 +75,35 @@ Shader "Optical/ImageFilter"
 	}
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// here: neighbors on line given by relative position between origin and pixel; the farther away the more desaturated are the colors
+	fixed4 fragRD(v2f IN) : SV_Target
+	{
+		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
+
+		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0]; // init final color
+
+		for (int i = 1; i < _FinalKernelSize; i++)
+		{
+			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; the farther the point is away from the origin the more it is blurred
+			col += tex2D(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
+			col += tex2D(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
+		}
+
+		// getting maximal distance from blur origin to a pixel
+		float maxDist = max(length(float2(0, 0) - float2(_OriginX, _OriginY)), length(float2(0, 1) - float2(_OriginX, _OriginY)));
+		maxDist = max(maxDist, length(float2(1, 0) - float2(_OriginX, _OriginY)));
+		maxDist = max(maxDist, length(float2(1, 1) - float2(_OriginX, _OriginY)));
+
+	
+		// linear interpolation between 'normal' color and grayscale color
+		float scale = (maxDist - (maxDist - length(diffVec)))/maxDist; // the farther away from origin a pixel is the more desaturated (gray) it will be
+		float3 lerped = lerp(col.xyz, intensity(col).xxx, scale);
+		
+		return float4(lerped, 1);
+	}
+
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	// here: neighbors on horizontal line through pixel
@@ -138,7 +168,17 @@ Shader "Optical/ImageFilter"
 			ENDCG
 		}
 
-		// 1: horizontal seperable gaussian blur
+		// 1: radial gaussian blur with desaturation
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment fragRD
+
+			ENDCG
+		}
+
+		// 2: horizontal seperable gaussian blur
 		Pass
 		{
 			CGPROGRAM
@@ -148,7 +188,7 @@ Shader "Optical/ImageFilter"
 			ENDCG
 		}
 
-		// 2: vertical seperable guassian blur
+		// 3: vertical seperable guassian blur
 		Pass
 		{
 			CGPROGRAM
@@ -158,7 +198,7 @@ Shader "Optical/ImageFilter"
 			ENDCG
 		}
 
-		// 3: high-pass filter
+		// 4: high-pass filter
 		Pass
 		{
 			CGPROGRAM
@@ -168,7 +208,7 @@ Shader "Optical/ImageFilter"
 			ENDCG
 		}
 
-		// 4: image sharpening
+		// 5: image sharpening
 		Pass
 		{
 			CGPROGRAM

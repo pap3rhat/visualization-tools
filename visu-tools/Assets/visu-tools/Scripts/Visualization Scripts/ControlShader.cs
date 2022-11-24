@@ -20,18 +20,19 @@ public class ControlShader : MonoBehaviour
     private ImageFilter imageFilterScript;
     [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
     [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
-    [Tooltip("Strength of radial blur effect.")] [Range(0f, 50f)] [SerializeField] private float scale;
+    [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scale;
 
     public enum ShaderActive
     {
         None = -1,
         RadialBlur = 0,
-        GaussianBlur = 1,
-        Sharpening = 2,
-        HighPass = 3,
-        Motion = 4,
-        HighPassOnMotion = 5,
-        MotionOnHighPass = 6
+        RadialBlurDesat = 1,
+        GaussianBlur = 2,
+        Sharpening = 3,
+        HighPass = 4,
+        Motion = 5,
+        HighPassOnMotion = 6,
+        MotionOnHighPass = 7
     }
 
     [Tooltip("Which image effect should be applied.")] public ShaderActive shaderActive;
@@ -104,6 +105,10 @@ public class ControlShader : MonoBehaviour
                 break;
             case ShaderActive.RadialBlur: // display a radial blur
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.Radial;
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
+                break;
+            case ShaderActive.RadialBlurDesat: // display a radial blur with desaturation
+                imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.RadialDesat;
                 imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
             case ShaderActive.GaussianBlur: // blur (low-pass filter) the image (remove high frequencies)

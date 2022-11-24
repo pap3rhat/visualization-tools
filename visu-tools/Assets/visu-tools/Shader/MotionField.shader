@@ -72,7 +72,7 @@ Shader "Optical/MotionField"
 		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
 		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color
 
-		// convert curretn pixel into intensity value (grayscale value)
+		// convert current pixel into intensity value (grayscale value)
 		float intent = intensity(tex2D(_Filtered, IN.uv));
 
 		// if intensity is high enough (high frequency in image got detected) show motion field colors; otherwise just show black

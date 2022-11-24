@@ -73,7 +73,7 @@ public class ControlShaderEditor : Editor
 
                 EditorGUILayout.PropertyField(kernelSize);
 
-                if (controlShader.shaderActive == ControlShader.ShaderActive.RadialBlur)
+                if (controlShader.shaderActive == ControlShader.ShaderActive.RadialBlur || controlShader.shaderActive == ControlShader.ShaderActive.RadialBlurDesat)
                 {
                     EditorGUILayout.PropertyField(radialBlurOriginX);
                     EditorGUILayout.PropertyField(radialBlurOriginY);

@@ -15,18 +15,20 @@ public class ImageFilter
     private enum Pass // determines which passes in shader need to be used
     {
         Radial = 0,
-        BlurH = 1,
-        BlurV = 2,
-        HighPass = 3,
-        Sharpening = 4
+        RadialDesat = 1,
+        BlurH = 2,
+        BlurV = 3,
+        HighPass = 4,
+        Sharpening = 5
     };
 
     public enum FilterMethod // list of all available basic filter methods
     {
         Radial = 0,
-        Blur = 1,
-        HighPass = 2,
-        Sharpening = 3
+        RadialDesat = 1,
+        Blur = 2,
+        HighPass = 3,
+        Sharpening = 4
     };
 
     private FilterMethod currentFilterMethod;
@@ -126,7 +128,7 @@ public class ImageFilter
             }
         }
     }
-    private const float DEFAULT_SCALE = 20f;
+    private const float DEFAULT_SCALE = 5f;
 
     // --- DATA FOR SHARPENING ---
     private const float sharpeningFactor = 0.85f; // constant for image sharpening (could be made variable and set by user)
@@ -160,6 +162,12 @@ public class ImageFilter
                 material.SetFloat("_OriginY", originY);
                 material.SetFloat("_Scale", scale);
                 Graphics.Blit(source, destination, material, (int)Pass.Radial);
+                break;
+            case FilterMethod.RadialDesat: // use radial blur and desaturate colors based on distance from blur origin
+                material.SetFloat("_OriginX", originX);
+                material.SetFloat("_OriginY", originY);
+                material.SetFloat("_Scale", scale);
+                Graphics.Blit(source, destination, material, (int)Pass.RadialDesat);
                 break;
             case FilterMethod.Blur: // blur the image
                 var tmp = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for bluring
