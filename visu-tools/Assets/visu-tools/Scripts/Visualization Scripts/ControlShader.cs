@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 /* Script that co-ordinates all available shader (combinations).
  * This is the script that needs to be attached to camera that is supposed to use the shaders. 
@@ -122,6 +123,13 @@ public class ControlShader : MonoBehaviour
     /* Method that is being called after camera has finished rendering; here we can modify the final image the user will see */
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        // crucial part for single pass instanced rendering; taken from: https://forum.unity.com/threads/creating-image-effects-for-singlepass-stereo-rendering-with-multiple-shader-passes.710609/
+        RenderTextureDescriptor desc;
+        if (XRSettings.enabled)
+            desc = XRSettings.eyeTextureDesc;
+        else
+            desc = new RenderTextureDescriptor(Screen.width, Screen.height); // Not XR
+
         switch (shaderActive)
         {
             case ShaderActive.None: // nothing is applied, image stays the same
@@ -152,7 +160,7 @@ public class ControlShader : MonoBehaviour
                 motionScript.RenderShader(source, destination, motionFieldMaterial);
                 break;
             case ShaderActive.HighPassOnMotion: // first display motion field as colors and then extract only the high frquencies from it
-                var tmp = RenderTexture.GetTemporary(source.width, source.height);
+                var tmp = RenderTexture.GetTemporary(desc);
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.OnlyMotion;
                 motionScript.RenderShader(source, tmp, motionFieldMaterial);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
@@ -160,7 +168,7 @@ public class ControlShader : MonoBehaviour
                 RenderTexture.ReleaseTemporary(tmp);
                 break;
             case ShaderActive.MotionOnHighPass: // first extract high frquencies from image and then apply motion field colors on it
-                var tmp2 = RenderTexture.GetTemporary(source.width, source.height);
+                var tmp2 = RenderTexture.GetTemporary(desc);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
                 imageFilterScript.RenderShader(source, tmp2, imageFilterMaterial);
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.MotionOnHighPass;
@@ -171,15 +179,15 @@ public class ControlShader : MonoBehaviour
                 depthScript.RenderShader(source, destination, depthMaterial);
                 break;
             case ShaderActive.HighPassOnDepth: // high-pass filter on depth 
-                var tmp3 = RenderTexture.GetTemporary(source.width, source.height);
+                var tmp3 = RenderTexture.GetTemporary(desc);
                 depthScript.RenderShader(source, tmp3, depthMaterial);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
                 imageFilterScript.RenderShader(tmp3, destination, imageFilterMaterial);
                 RenderTexture.ReleaseTemporary(tmp3);
                 break;
             case ShaderActive.MotionOnHighPassOnDepth: // motion field on high-pass filter on depth 
-                var tmp4 = RenderTexture.GetTemporary(source.width, source.height);
-                var tmp5 = RenderTexture.GetTemporary(source.width, source.height);
+                var tmp4 = RenderTexture.GetTemporary(desc);
+                var tmp5 = RenderTexture.GetTemporary(desc);
                 depthScript.RenderShader(source, tmp4, depthMaterial);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
                 imageFilterScript.RenderShader(tmp4, tmp5, imageFilterMaterial);
