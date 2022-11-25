@@ -17,4 +17,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Replay World.unity
     guid: e8000d41317167744a48c7f7f2d24dde
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 94c5e5676f4cb9e4e8693667c2d6027f, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: c40f73126d668904795a8216359d5b93, type: 2}
