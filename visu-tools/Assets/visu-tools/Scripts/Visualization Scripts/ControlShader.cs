@@ -10,6 +10,7 @@ public class ControlShader : MonoBehaviour
     [Tooltip("Move camera to which this script is attached in here.")] [SerializeField] private Camera cam;
     [Tooltip("Move material named 'MotionField' in here.")] [SerializeField] private Material motionFieldMaterial;
     [Tooltip("Move material named 'ImageFilter' in here.")] [SerializeField] private Material imageFilterMaterial;
+    [Tooltip("Move material named 'Depth' in here.")] [SerializeField] private Material depthMaterial;
 
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
@@ -22,6 +23,11 @@ public class ControlShader : MonoBehaviour
     [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
     [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scale;
 
+    // necessary information for all shaders containing the depth
+    private Depth depthScript;
+    [Tooltip("Color of the objects close to the camera.")] [ColorUsage(true)] [SerializeField] private Color colorNear;
+    [Tooltip("Color of the objects farthest from the camera.")] [ColorUsage(true)] [SerializeField] private Color colorFar;
+
     public enum ShaderActive
     {
         None = -1,
@@ -32,7 +38,10 @@ public class ControlShader : MonoBehaviour
         HighPass = 4,
         Motion = 5,
         HighPassOnMotion = 6,
-        MotionOnHighPass = 7
+        MotionOnHighPass = 7,
+        Depth = 8,
+        HighPassOnDepth = 9,
+        MotionOnHighPassOnDepth = 10
     }
 
     [Tooltip("Which image effect should be applied.")] public ShaderActive shaderActive;
@@ -60,6 +69,11 @@ public class ControlShader : MonoBehaviour
         radialBlurOriginX = imageFilterScript.OriginX;
         radialBlurOriginY = imageFilterScript.OriginY;
         scale = imageFilterScript.Scale;
+
+        // set-up for all shaders regarding the depth
+        depthScript = new Depth();
+        colorNear = depthScript.ColorNear;
+        colorFar = depthScript.ColorFar;
     }
 
     /* Method that is being called every frame */
@@ -92,6 +106,16 @@ public class ControlShader : MonoBehaviour
         if (threshold != motionScript.Threshold && threshold >= 0 & threshold <= 1)
         {
             motionScript.Threshold = threshold;
+        }
+
+        // checking if color changed
+        if (colorNear != depthScript.ColorNear)
+        {
+            depthScript.ColorNear = colorNear;
+        }
+        if (colorFar != depthScript.ColorFar)
+        {
+            depthScript.ColorFar = colorFar;
         }
     }
 
@@ -142,6 +166,27 @@ public class ControlShader : MonoBehaviour
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.MotionOnHighPass;
                 motionScript.RenderShader(tmp2, destination, motionFieldMaterial);
                 RenderTexture.ReleaseTemporary(tmp2);
+                break;
+            case ShaderActive.Depth: // visualizing depth 
+                depthScript.RenderShader(source, destination, depthMaterial);
+                break;
+            case ShaderActive.HighPassOnDepth: // high-pass filter on depth 
+                var tmp3 = RenderTexture.GetTemporary(source.width, source.height);
+                depthScript.RenderShader(source, tmp3, depthMaterial);
+                imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
+                imageFilterScript.RenderShader(tmp3, destination, imageFilterMaterial);
+                RenderTexture.ReleaseTemporary(tmp3);
+                break;
+            case ShaderActive.MotionOnHighPassOnDepth: // motion field on high-pass filter on depth 
+                var tmp4 = RenderTexture.GetTemporary(source.width, source.height);
+                var tmp5 = RenderTexture.GetTemporary(source.width, source.height);
+                depthScript.RenderShader(source, tmp4, depthMaterial);
+                imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
+                imageFilterScript.RenderShader(tmp4, tmp5, imageFilterMaterial);
+                motionScript.CurrentFilterMethod = MotionField.FilterMethod.MotionOnHighPass;
+                motionScript.RenderShader(tmp5, destination, motionFieldMaterial);
+                RenderTexture.ReleaseTemporary(tmp4);
+                RenderTexture.ReleaseTemporary(tmp5);
                 break;
         }
     }

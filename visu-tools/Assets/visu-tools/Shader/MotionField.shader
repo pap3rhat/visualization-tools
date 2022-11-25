@@ -1,6 +1,5 @@
 Shader "Optical/MotionField"
 {
-
 	CGINCLUDE
 	#include "UnityCG.cginc"
 	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
@@ -26,7 +25,7 @@ Shader "Optical/MotionField"
 	float _Threshold; // determines how high intensity has to be in order to show up on the final image
 
 	// by unity generated texture that contains information about the 2D movement of each point in clip space between the last frame and the current frame, based on its 3D-movement in the world relative to the camera
-	sampler2D_half _CameraMotionVectorsTexture;
+	sampler2D_float _CameraMotionVectorsTexture;
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
