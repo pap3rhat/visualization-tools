@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 /* Script that contains functions for image filtering.
  * Radial: Removes high frequencies from image (around an origin).
@@ -155,6 +156,13 @@ public class ImageFilter
      */
     public void RenderShader(RenderTexture source, RenderTexture destination, Material material)
     {
+        // crucial part for single pass instanced rendering; taken from: https://forum.unity.com/threads/creating-image-effects-for-singlepass-stereo-rendering-with-multiple-shader-passes.710609/
+        RenderTextureDescriptor desc;
+        if (XRSettings.enabled)
+            desc = XRSettings.eyeTextureDesc;
+        else
+            desc = new RenderTextureDescriptor(Screen.width, Screen.height); // Not XR
+
         switch (currentFilterMethod)
         {
             case FilterMethod.Radial: // use radial blur
@@ -170,7 +178,7 @@ public class ImageFilter
                 Graphics.Blit(source, destination, material, (int)Pass.RadialDesat);
                 break;
             case FilterMethod.Blur: // blur the image
-                var tmp = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for bluring
+                var tmp = RenderTexture.GetTemporary(desc); // temporary render texture for bluring
 
                 Graphics.Blit(source, tmp, material, (int)Pass.BlurH); // horizontal blur
                 Graphics.Blit(tmp, destination, material, (int)Pass.BlurV); // vertical blur
@@ -180,8 +188,8 @@ public class ImageFilter
             case FilterMethod.HighPass: // apply high pass to image
                 material.SetTexture("_First", source); // setting current frame for shader to use
 
-                var tmp2 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for horizontal blur pass
-                var tmp3 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for vertical blur pass
+                var tmp2 = RenderTexture.GetTemporary(desc); // temporary render texture for horizontal blur pass
+                var tmp3 = RenderTexture.GetTemporary(desc); // temporary render texture for vertical blur pass
 
                 Graphics.Blit(source, tmp2, material, (int)Pass.BlurH); // horizontal blur
                 Graphics.Blit(tmp2, tmp3, material, (int)Pass.BlurV); // vertical blur
@@ -195,8 +203,8 @@ public class ImageFilter
                 material.SetTexture("_First", source); // setting current frame for shader to use
                 material.SetFloat("_SharpeningFactor", sharpeningFactor); // setting sharpening factor for shader to use
 
-                var tmp4 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for horizontal blur pass
-                var tmp5 = RenderTexture.GetTemporary(source.width, source.height); // temporary render texture for vertical blur pass
+                var tmp4 = RenderTexture.GetTemporary(desc); // temporary render texture for horizontal blur pass
+                var tmp5 = RenderTexture.GetTemporary(desc); // temporary render texture for vertical blur pass
 
                 Graphics.Blit(source, tmp4, material, (int)Pass.BlurH); // horizontal blur
                 Graphics.Blit(tmp4, tmp5, material, (int)Pass.BlurV); // vertical blur

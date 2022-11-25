@@ -14,6 +14,8 @@ Shader "Optical/ImageFilter"
 	{
 		float4 pos : POSITION; // position of vertex in world coordinates (WORLD POSITION)
 		float2 uv : TEXCOORD0; // uv coordinate
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID // single pass instancing support
 	};
 
 	// vertex shader to fragment shader
@@ -21,12 +23,14 @@ Shader "Optical/ImageFilter"
 	{
 		float4 pos : SV_POSITION; // position of vertex in camera coordinates (CLIP SPACE POISION)
 		float2 uv : TEXCOORD0; // uv coordinate
+
+		UNITY_VERTEX_OUTPUT_STEREO // single pass instancing support
 	};
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// --- GENERAL DATA ---
-	sampler2D _MainTex; // main diffuse texture
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex); // main diffuse texture
 
 	float4 _MainTex_TexelSize; // contains texture size information for _MainTex
 
@@ -40,7 +44,7 @@ Shader "Optical/ImageFilter"
 	float _Scale; // scales the strength of the blur effect
 
 	// --- DATA FOR HIGH-PASS AND SHARPENING ---
-	sampler2D _First; // "original" frame
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_First); // "original" frame
 	float _SharpeningFactor; // determines 'strength' of sharpening
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -49,6 +53,12 @@ Shader "Optical/ImageFilter"
 	v2f vert(a2v IN)
 	{
 		v2f OUT;
+
+		// single pass instancing support
+		UNITY_SETUP_INSTANCE_ID(IN);
+		UNITY_INITIALIZE_OUTPUT(v2f, OUT);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
 		OUT.pos = UnityObjectToClipPos(IN.pos);
 		OUT.uv = IN.uv;
 		return OUT;
@@ -62,13 +72,13 @@ Shader "Optical/ImageFilter"
 	{
 		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
 
-		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0]; // init final color
+		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0]; // init final color
 
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
 			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; the farther the point is away from the origin the more it is blurred
-			col += tex2D(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
-			col += tex2D(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
 		}
 		
 		return col;
@@ -81,13 +91,13 @@ Shader "Optical/ImageFilter"
 	{
 		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
 
-		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0]; // init final color
+		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0]; // init final color
 
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
 			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; the farther the point is away from the origin the more it is blurred
-			col += tex2D(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
-			col += tex2D(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
 		}
 
 		// getting maximal distance from blur origin to a pixel
@@ -109,11 +119,11 @@ Shader "Optical/ImageFilter"
 	// here: neighbors on horizontal line through pixel
 	fixed4 fragH(v2f IN) : SV_Target
 	{
-		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
+		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
-			col += tex2D(_MainTex, saturate(IN.uv + float2(_Offset[i] * _MainTex_TexelSize.x,0))) * _Kernel[i];
-			col += tex2D(_MainTex, saturate(IN.uv - float2(_Offset[i] * _MainTex_TexelSize.x, 0))) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + float2(_Offset[i] * _MainTex_TexelSize.x,0))) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - float2(_Offset[i] * _MainTex_TexelSize.x, 0))) * _Kernel[i];
 		}
 		return col;
 	}
@@ -124,11 +134,11 @@ Shader "Optical/ImageFilter"
 	// here: neighbors on vertical line through pixel
 	fixed4 fragV(v2f IN) : SV_Target
 	{
-		float4 col = tex2D(_MainTex, IN.uv) * _Kernel[0];
+		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
-			col += tex2D(_MainTex, saturate(IN.uv + float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
-			col += tex2D(_MainTex, saturate(IN.uv - float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - float2(0, _Offset[i] * _MainTex_TexelSize.y))) * _Kernel[i];
 		}
 		return col;
 	}
@@ -138,7 +148,7 @@ Shader "Optical/ImageFilter"
 	// Fragment shader; detemines final color for each pixel by subtracting blurred frame from "original" frame (realizes gaussian high-spass filter)
 	fixed4 fragHPF(v2f IN) : SV_Target
 	{
-		return tex2D(_First, IN.uv) - tex2D(_MainTex, IN.uv);
+		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv);
 	}
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -146,7 +156,7 @@ Shader "Optical/ImageFilter"
 	// Fragment shader; detemines final color for each pixel by subtracting blurred frame from "original" frame, weighting it and then adding it back to the original image (realizes image sharpening)
 	fixed4 fragSH(v2f IN) : SV_Target
 	{
-		return tex2D(_First, IN.uv) + _SharpeningFactor * (tex2D(_First, IN.uv) - tex2D(_MainTex, IN.uv));
+		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) + _SharpeningFactor * (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv));
 	}
 
 	ENDCG
@@ -164,6 +174,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragR
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
@@ -174,6 +185,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragRD
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
@@ -184,6 +196,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragH
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
@@ -194,6 +207,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragV
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
@@ -204,6 +218,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragHPF
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
@@ -214,6 +229,7 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragSH
+			#pragma multi_compile_instancing
 
 			ENDCG
 		}
