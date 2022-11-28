@@ -8,6 +8,8 @@ using UnityEngine.XR;
 [RequireComponent(typeof(Camera))]
 public class ControlShader : MonoBehaviour
 {
+    #region Basic variables
+
     // setup for shader
     [Tooltip("Move camera to which this script is attached in here.")] [SerializeField] private Camera cam;
     [Tooltip("Move material named 'MotionField' in here.")] [SerializeField] private Material motionFieldMaterial;
@@ -33,6 +35,9 @@ public class ControlShader : MonoBehaviour
     [Tooltip("Color of the objects close to the camera.")] [ColorUsage(true)] [SerializeField] private Color colorNear;
     [Tooltip("Color of the objects farthest from the camera.")] [ColorUsage(true)] [SerializeField] private Color colorFar;
 
+    #endregion
+
+    #region XR information
     // information if xr is used
     private bool xrActive;
     public bool XrActive
@@ -46,6 +51,9 @@ public class ControlShader : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Active shader information
     public enum ShaderActive
     {
         None = -1,
@@ -65,124 +73,72 @@ public class ControlShader : MonoBehaviour
 
     [Tooltip("Which image effect should be applied.")] public ShaderActive shaderActive;
 
+    #endregion
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- MONO BEHAVIOUR METHODS ---
+
+    #region Mono behaviour methods
 
     /* Method that is being called when the script instance is being loaded */
     private void Awake()
     {
-        // setting active shader to "None" as a default
-        shaderActive = ShaderActive.None;
+        BasciSetUp();
 
-        // setting up camera
-        cam = GetComponent<Camera>(); // getting camera object to which this script is attached
-        cam.depthTextureMode = cam.depthTextureMode | DepthTextureMode.Depth | DepthTextureMode.MotionVectors; // activiating option to generate motion vectors 
-
-        // set-up for all shaders regarding the motion field
-        motionScript = new MotionField();
-        scaleMotionField = motionScript.Scale;
-        threshold = motionScript.Threshold;
-
-        // set-up for all shaders containing some kind of "basic" filtering
-        imageFilterScript = new ImageFilter();
-        imageFilterScript.KernelSetUp(imageFilterMaterial);
-        kernelSize = imageFilterScript.KernelSize;
-        radialBlurOriginX = imageFilterScript.OriginXLeftEye;
-        radialBlurOriginY = imageFilterScript.OriginYLeftEye;
-        radialBlurOriginXLeftEye = imageFilterScript.OriginXLeftEye;
-        radialBlurOriginYLeftEye = imageFilterScript.OriginYLeftEye;
-        radialBlurOriginXRightEye = imageFilterScript.OriginXRightEye;
-        radialBlurOriginYRightEye = imageFilterScript.OriginYRightEye;
-        scaleRadial = imageFilterScript.ScaleRadial;
-        scaleMotionBlur = imageFilterScript.ScaleMotionBlur;
-
-        // set-up for all shaders regarding the depth
-        depthScript = new Depth();
-        colorNear = depthScript.ColorNear;
-        colorFar = depthScript.ColorFar;
-
-        // checking if xr is being used (check happens above, the true here will be overwritten by either true or false)
-        XrActive = true;
+        MotionFieldSetUp();
+        ImageFilterSetUp();
+        DepthSetUp();
     }
 
     /* Method that is being called every frame */
     private void Update()
     {
-        // checking if kernel for basic image filtering needs to be updated
-        if (kernelSize != imageFilterScript.KernelSize && kernelSize % 2 != 0 && kernelSize >= ImageFilter.MIN_KERNEL_SIZE)
+        // updating necessary information based on which shader is active 
+        switch (shaderActive)
         {
-            imageFilterScript.KernelSize = kernelSize;
-            imageFilterScript.KernelSetUp(imageFilterMaterial);
-        }
-
-        // checking if origin for radial blur changed
-        if (!xrActive)
-        {
-            if (radialBlurOriginX != imageFilterScript.OriginXLeftEye && radialBlurOriginX >= 0 && radialBlurOriginX <= 1)
-            {
-                imageFilterScript.OriginXLeftEye = radialBlurOriginX;
-            }
-            if (radialBlurOriginY != imageFilterScript.OriginYLeftEye && radialBlurOriginY >= 0 && radialBlurOriginY <= 1)
-            {
-                imageFilterScript.OriginYLeftEye = radialBlurOriginY;
-            }
-        }
-        else
-        {
-            if (radialBlurOriginXLeftEye != imageFilterScript.OriginXLeftEye && radialBlurOriginXLeftEye >= 0 && radialBlurOriginXLeftEye <= 1)
-            {
-                imageFilterScript.OriginXLeftEye = radialBlurOriginXLeftEye;
-            }
-            if (radialBlurOriginYLeftEye != imageFilterScript.OriginYLeftEye && radialBlurOriginYLeftEye >= 0 && radialBlurOriginYLeftEye <= 1)
-            {
-                imageFilterScript.OriginYLeftEye = radialBlurOriginYLeftEye;
-            }
-            if (radialBlurOriginXRightEye != imageFilterScript.OriginXRightEye && radialBlurOriginXRightEye >= 0 && radialBlurOriginXRightEye <= 1)
-            {
-                imageFilterScript.OriginXRightEye = radialBlurOriginXRightEye;
-            }
-            if (radialBlurOriginYRightEye != imageFilterScript.OriginYRightEye && radialBlurOriginYRightEye >= 0 && radialBlurOriginYRightEye <= 1)
-            {
-                imageFilterScript.OriginYRightEye = radialBlurOriginYRightEye;
-            }
-        }
-
-
-        // checking if scale for radial blurred changed
-        if (scaleRadial != imageFilterScript.ScaleRadial && scaleRadial >= 0 && scaleRadial <= 100)
-        {
-            imageFilterScript.ScaleRadial = scaleRadial;
-
-        }
-
-        // checking if scale for motion blur changed
-        if (scaleMotionBlur != imageFilterScript.ScaleMotionBlur && scaleMotionBlur >= 0 && scaleMotionBlur <= 100)
-        {
-            imageFilterScript.ScaleMotionBlur = scaleMotionBlur;
-
-        }
-
-        // checking if scale for motion vectors changed
-        if (scaleMotionField != motionScript.Scale && scaleMotionField >= 1 && scaleMotionField <= 10)
-        {
-            motionScript.Scale = scaleMotionField;
-        }
-
-        // checking if threshold for motion field on high-pass needs to be updated
-        if (threshold != motionScript.Threshold && threshold >= 0 & threshold <= 1)
-        {
-            motionScript.Threshold = threshold;
-        }
-
-        // checking if color changed
-        if (colorNear != depthScript.ColorNear)
-        {
-            depthScript.ColorNear = colorNear;
-        }
-        if (colorFar != depthScript.ColorFar)
-        {
-            depthScript.ColorFar = colorFar;
+            case ShaderActive.RadialBlur:
+            case ShaderActive.RadialBlurDesat:
+                UpdateKernelInformation();
+                UpdateBlurOriginInformation();
+                UpdateRadialBlurScaleInformation();
+                break;
+            case ShaderActive.GaussianBlur:
+            case ShaderActive.Sharpening:
+            case ShaderActive.HighPass:
+                UpdateKernelInformation();
+                break;
+            case ShaderActive.MotionBlur:
+                UpdateKernelInformation();
+                UpdateMotionBlurScaleInformation();
+                break;
+            case ShaderActive.MotionField:
+                UpdateMotionFieldScaleInformation();
+                break;
+            case ShaderActive.HighPassOnMotionField:
+                UpdateKernelInformation();
+                UpdateMotionFieldScaleInformation();
+                break;
+            case ShaderActive.MotionFieldOnHighPass:
+                UpdateKernelInformation();
+                UpdateMotionFieldScaleInformation();
+                UpdateThresholdInformation();
+                break;
+            case ShaderActive.Depth:
+                UpdateColorInformation();
+                break;
+            case ShaderActive.HighPassOnDepth:
+                UpdateKernelInformation();
+                UpdateColorInformation();
+                break;
+            case ShaderActive.MotionFieldOnHighPassOnDepth:
+                UpdateKernelInformation();
+                UpdateMotionFieldScaleInformation();
+                UpdateThresholdInformation();
+                UpdateColorInformation();
+                break;
         }
     }
+
 
     /* Method that is being called after camera has finished rendering; here we can modify the final image the user will see */
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -272,4 +228,168 @@ public class ControlShader : MonoBehaviour
     {
         imageFilterScript.CleanUp();
     }
+
+    #endregion
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- HELPER METHODS ---
+
+    #region Set-up helper
+
+    /* Sets up all infomration necessary for depth effects */
+    private void DepthSetUp()
+    {
+        // set-up for all shaders regarding the depth
+        depthScript = new Depth();
+        colorNear = depthScript.ColorNear;
+        colorFar = depthScript.ColorFar;
+    }
+
+    /* Sets up all infomration necessary for image filters effects*/
+    private void ImageFilterSetUp()
+    {
+        // set-up for all shaders containing some kind of filtering
+        imageFilterScript = new ImageFilter();
+        imageFilterScript.KernelSetUp(imageFilterMaterial);
+        kernelSize = imageFilterScript.KernelSize;
+        radialBlurOriginX = imageFilterScript.OriginXLeftEye;
+        radialBlurOriginY = imageFilterScript.OriginYLeftEye;
+        radialBlurOriginXLeftEye = imageFilterScript.OriginXLeftEye;
+        radialBlurOriginYLeftEye = imageFilterScript.OriginYLeftEye;
+        radialBlurOriginXRightEye = imageFilterScript.OriginXRightEye;
+        radialBlurOriginYRightEye = imageFilterScript.OriginYRightEye;
+        scaleRadial = imageFilterScript.ScaleRadial;
+        scaleMotionBlur = imageFilterScript.ScaleMotionBlur;
+    }
+
+    /* Sets up all infomration necessary for motion field effects */
+    private void MotionFieldSetUp()
+    {
+        // set-up for all shaders regarding the motion field
+        motionScript = new MotionField();
+        scaleMotionField = motionScript.Scale;
+        threshold = motionScript.Threshold;
+    }
+
+    /* Sets up all gernal information that is needed */
+    private void BasciSetUp()
+    {
+        // setting active shader to "None" as a default
+        shaderActive = ShaderActive.None;
+
+        // setting up camera
+        cam = GetComponent<Camera>(); // getting camera object to which this script is attached
+        cam.depthTextureMode = cam.depthTextureMode | DepthTextureMode.Depth | DepthTextureMode.MotionVectors; // activiating option to generate motion vectors 
+
+        // checking if xr is being used (check happens above, the true here will be overwritten by either true or false)
+        XrActive = true;
+    }
+
+    #endregion
+
+    #region Update helper
+
+    /* Updates color information for depth effects */
+    private void UpdateColorInformation()
+    {
+        // checking if color changed
+        if (colorNear != depthScript.ColorNear)
+        {
+            depthScript.ColorNear = colorNear;
+        }
+        if (colorFar != depthScript.ColorFar)
+        {
+            depthScript.ColorFar = colorFar;
+        }
+    }
+
+    /* Updates threshold information for motion on high pass effects */
+    private void UpdateThresholdInformation()
+    {
+        // checking if threshold for motion field on high-pass needs to be updated
+        if (threshold != motionScript.Threshold && threshold >= 0 & threshold <= 1)
+        {
+            motionScript.Threshold = threshold;
+        }
+    }
+
+    /* Updates scale motion field information for motion field effects */
+    private void UpdateMotionFieldScaleInformation()
+    {
+        // checking if scale for motion vectors changed
+        if (scaleMotionField != motionScript.Scale && scaleMotionField >= 1 && scaleMotionField <= 10)
+        {
+            motionScript.Scale = scaleMotionField;
+        }
+    }
+
+    /* Updates scale motion blur information for motion blur effect */
+    private void UpdateMotionBlurScaleInformation()
+    {
+        // checking if scale for motion blur changed
+        if (scaleMotionBlur != imageFilterScript.ScaleMotionBlur && scaleMotionBlur >= 0 && scaleMotionBlur <= 100)
+        {
+            imageFilterScript.ScaleMotionBlur = scaleMotionBlur;
+
+        }
+    }
+
+    /* Updates scale radial blur information for radial blur effects */
+    private void UpdateRadialBlurScaleInformation()
+    {
+        // checking if scale for radial blurred changed
+        if (scaleRadial != imageFilterScript.ScaleRadial && scaleRadial >= 0 && scaleRadial <= 100)
+        {
+            imageFilterScript.ScaleRadial = scaleRadial;
+        }
+    }
+
+    /* Updates blur origin information for radial blur effects */
+    private void UpdateBlurOriginInformation()
+    {
+        // checking if origin for radial blur changed
+        if (!xrActive)
+        {
+            if (radialBlurOriginX != imageFilterScript.OriginXLeftEye && radialBlurOriginX >= 0 && radialBlurOriginX <= 1)
+            {
+                imageFilterScript.OriginXLeftEye = radialBlurOriginX;
+            }
+            if (radialBlurOriginY != imageFilterScript.OriginYLeftEye && radialBlurOriginY >= 0 && radialBlurOriginY <= 1)
+            {
+                imageFilterScript.OriginYLeftEye = radialBlurOriginY;
+            }
+        }
+        else
+        {
+            if (radialBlurOriginXLeftEye != imageFilterScript.OriginXLeftEye && radialBlurOriginXLeftEye >= 0 && radialBlurOriginXLeftEye <= 1)
+            {
+                imageFilterScript.OriginXLeftEye = radialBlurOriginXLeftEye;
+            }
+            if (radialBlurOriginYLeftEye != imageFilterScript.OriginYLeftEye && radialBlurOriginYLeftEye >= 0 && radialBlurOriginYLeftEye <= 1)
+            {
+                imageFilterScript.OriginYLeftEye = radialBlurOriginYLeftEye;
+            }
+            if (radialBlurOriginXRightEye != imageFilterScript.OriginXRightEye && radialBlurOriginXRightEye >= 0 && radialBlurOriginXRightEye <= 1)
+            {
+                imageFilterScript.OriginXRightEye = radialBlurOriginXRightEye;
+            }
+            if (radialBlurOriginYRightEye != imageFilterScript.OriginYRightEye && radialBlurOriginYRightEye >= 0 && radialBlurOriginYRightEye <= 1)
+            {
+                imageFilterScript.OriginYRightEye = radialBlurOriginYRightEye;
+            }
+        }
+    }
+
+    /* Updates kernel information for image filter effects */
+    private void UpdateKernelInformation()
+    {
+        // checking if kernel for basic image filtering needs to be updated
+        if (kernelSize != imageFilterScript.KernelSize && kernelSize % 2 != 0 && kernelSize >= ImageFilter.MIN_KERNEL_SIZE)
+        {
+            imageFilterScript.KernelSize = kernelSize;
+            imageFilterScript.KernelSetUp(imageFilterMaterial);
+        }
+    }
+    #endregion
+
 }
