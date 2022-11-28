@@ -24,6 +24,8 @@ Shader "Optical/MotionField"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+	float _Scale; // used to scale motionVectors, because they can be very tiny
+
 	// used when motion field is applied after high-pass filter
 	UNITY_DECLARE_SCREENSPACE_TEXTURE(_Filtered); // texture after high-pass filter got applied
 	float _Threshold; // determines how high intensity has to be in order to show up on the final image
@@ -58,7 +60,7 @@ Shader "Optical/MotionField"
 		motion.x = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).r;
 		motion.y = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).g;
 
-		motion *= _ScreenParams.xy;
+		motion = motion * unity_DeltaTime.y * _Scale; // scaling vector so it's visible; making it frame-rate independent
 
 		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
 		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color
@@ -76,7 +78,7 @@ Shader "Optical/MotionField"
 		motion.x = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).r;
 		motion.y = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).g;
 
-		motion *= _ScreenParams.xy; // TODO: Find out how to scale
+		motion = motion * unity_DeltaTime.y * _Scale; // scaling vector so it's visible; making it frame-rate independent
 
 		float3 motionHsv = motionToHSV(motion); // converting motion in x and y direction into a color (in HSV color space)
 		float3 motionRGB = hsvToRgb(motionHsv); // converting hsv color to rgb output color

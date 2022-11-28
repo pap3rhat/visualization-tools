@@ -16,6 +16,7 @@ public class ControlShader : MonoBehaviour
 
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
+    [Tooltip("How strong should the motion vectors be scaled.")] [Range(1f, 10)] [SerializeField] private float scaleMotion;
     [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")]
     [Range(0f, 0.25f)] [SerializeField] private float threshold;
 
@@ -25,7 +26,7 @@ public class ControlShader : MonoBehaviour
     [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
     [Tooltip("Offset of origin of radial blur effect for the left eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXLeftEye, radialBlurOriginYLeftEye;
     [Tooltip("Offset of origin of radial blur effect for the right eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXRightEye, radialBlurOriginYRightEye;
-    [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scale;
+    [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scaleRadial;
 
     // necessary information for all shaders containing the depth
     private Depth depthScript;
@@ -77,6 +78,7 @@ public class ControlShader : MonoBehaviour
 
         // set-up for all shaders regarding the motion field
         motionScript = new MotionField();
+        scaleMotion = motionScript.Scale;
         threshold = motionScript.Threshold;
 
         // set-up for all shaders containing some kind of "basic" filtering
@@ -89,7 +91,7 @@ public class ControlShader : MonoBehaviour
         radialBlurOriginYLeftEye = imageFilterScript.OriginYLeftEye;
         radialBlurOriginXRightEye = imageFilterScript.OriginXRightEye;
         radialBlurOriginYRightEye = imageFilterScript.OriginYRightEye;
-        scale = imageFilterScript.Scale;
+        scaleRadial = imageFilterScript.Scale;
 
         // set-up for all shaders regarding the depth
         depthScript = new Depth();
@@ -143,10 +145,17 @@ public class ControlShader : MonoBehaviour
         }
 
 
-        // cehcking if scale for radial blurred changed
-        if (scale != imageFilterScript.Scale && scale >= 0 && scale <= 100)
+        // checking if scale for radial blurred changed
+        if (scaleRadial != imageFilterScript.Scale && scaleRadial >= 0 && scaleRadial <= 100)
         {
-            imageFilterScript.Scale = scale;
+            imageFilterScript.Scale = scaleRadial;
+
+        }
+
+        // checking if scale for motion vectors changed
+        if (scaleMotion != motionScript.Scale && scaleMotion >= 1 && scaleMotion <= 10)
+        {
+            motionScript.Scale = scaleMotion;
         }
 
         // checking if threshold for motion field on high-pass needs to be updated
