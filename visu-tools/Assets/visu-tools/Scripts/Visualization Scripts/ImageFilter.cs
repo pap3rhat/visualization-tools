@@ -22,7 +22,8 @@ public class ImageFilter
         BlurH = 2,
         BlurV = 3,
         HighPass = 4,
-        Sharpening = 5
+        Sharpening = 5,
+        MotionBlur = 6
     };
 
     public enum FilterMethod // list of all available basic filter methods
@@ -31,7 +32,8 @@ public class ImageFilter
         RadialDesat = 1,
         Blur = 2,
         HighPass = 3,
-        Sharpening = 4
+        Sharpening = 4,
+        MotionBlur = 5
     };
 
     private FilterMethod currentFilterMethod;
@@ -82,7 +84,7 @@ public class ImageFilter
     #region Radial blur data
 
     // ínformation about origin of blur effect for radial blur
-   
+
     private const float DEFAULT_ORIGIN_X = 0.5f; // default is pixel in center of screen along x-axis
     private const float DEFAULT_ORIGIN_Y = 0.5f; // default is pixel in center of screen along y-axis
 
@@ -154,15 +156,15 @@ public class ImageFilter
         }
     }
 
-    private float scale;
-    public float Scale
+    private float scaleRadial;
+    public float ScaleRadial
     {
-        get { return scale; }
+        get { return scaleRadial; }
         set
         {
             if (value >= 0 && value <= 100) // check if value is within bounds
             {
-                scale = value;
+                scaleRadial = value;
             }
             else
             {
@@ -171,6 +173,23 @@ public class ImageFilter
         }
     }
     private const float DEFAULT_SCALE = 5f;
+
+    private float scaleMotionBlur;
+    public float ScaleMotionBlur
+    {
+        get { return scaleMotionBlur; }
+        set
+        {
+            if (value >= 0 && value <= 100) // check if value is within bounds
+            {
+                scaleMotionBlur = value;
+            }
+            else
+            {
+                Debug.Log("The origin coordinates for y have to be between 0 and 1!");
+            }
+        }
+    }
 
     #endregion
 
@@ -184,12 +203,13 @@ public class ImageFilter
     {
         kernelSize = DEFAULT_KERNEL_SIZE; // init kernelSize
 
-        // setting up default origin and scale of radial blur
+        // setting up default origin and scale of radial blur and motion blur
         originXLeftEye = DEFAULT_ORIGIN_X;
         originXRightEye = DEFAULT_ORIGIN_X;
         originYLeftEye = DEFAULT_ORIGIN_Y;
         originYRightEye = DEFAULT_ORIGIN_Y;
-        scale = DEFAULT_SCALE;
+        scaleRadial = DEFAULT_SCALE;
+        scaleMotionBlur = DEFAULT_SCALE;
     }
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -215,7 +235,7 @@ public class ImageFilter
                 material.SetFloat("_OriginYLeftEye", originYLeftEye);
                 material.SetFloat("_OriginXRightEye", originXRightEye);
                 material.SetFloat("_OriginYRightEye", originYRightEye);
-                material.SetFloat("_Scale", scale);
+                material.SetFloat("_Scale", scaleRadial);
                 Graphics.Blit(source, destination, material, (int)Pass.Radial);
                 break;
             case FilterMethod.RadialDesat: // use radial blur and desaturate colors based on distance from blur origin
@@ -223,7 +243,7 @@ public class ImageFilter
                 material.SetFloat("_OriginYLeftEye", originYLeftEye);
                 material.SetFloat("_OriginXRightEye", originXRightEye);
                 material.SetFloat("_OriginYRightEye", originYRightEye);
-                material.SetFloat("_Scale", scale);
+                material.SetFloat("_Scale", scaleRadial);
                 Graphics.Blit(source, destination, material, (int)Pass.RadialDesat);
                 break;
             case FilterMethod.Blur: // blur the image
@@ -263,6 +283,11 @@ public class ImageFilter
                 RenderTexture.ReleaseTemporary(tmp4);
                 RenderTexture.ReleaseTemporary(tmp5);
                 break;
+            case FilterMethod.MotionBlur: // using motion blur
+                material.SetFloat("_Scale", scaleMotionBlur);
+                Graphics.Blit(source, destination, material, (int)Pass.MotionBlur);
+                break;
+
         }
     }
 

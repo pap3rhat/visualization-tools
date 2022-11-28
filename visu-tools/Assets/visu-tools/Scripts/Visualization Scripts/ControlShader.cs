@@ -16,7 +16,7 @@ public class ControlShader : MonoBehaviour
 
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
-    [Tooltip("How strong should the motion vectors be scaled.")] [Range(1f, 10)] [SerializeField] private float scaleMotion;
+    [Tooltip("How strong should the motion vectors be scaled.")] [Range(1f, 10)] [SerializeField] private float scaleMotionField;
     [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")]
     [Range(0f, 0.25f)] [SerializeField] private float threshold;
 
@@ -27,7 +27,7 @@ public class ControlShader : MonoBehaviour
     [Tooltip("Offset of origin of radial blur effect for the left eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXLeftEye, radialBlurOriginYLeftEye;
     [Tooltip("Offset of origin of radial blur effect for the right eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXRightEye, radialBlurOriginYRightEye;
     [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scaleRadial;
-
+    [Tooltip("Strength of motion blur effect.")] [Range(0f, 10f)] [SerializeField] private float scaleMotionBlur;
     // necessary information for all shaders containing the depth
     private Depth depthScript;
     [Tooltip("Color of the objects close to the camera.")] [ColorUsage(true)] [SerializeField] private Color colorNear;
@@ -54,12 +54,13 @@ public class ControlShader : MonoBehaviour
         GaussianBlur = 2,
         Sharpening = 3,
         HighPass = 4,
-        Motion = 5,
-        HighPassOnMotion = 6,
-        MotionOnHighPass = 7,
-        Depth = 8,
-        HighPassOnDepth = 9,
-        MotionOnHighPassOnDepth = 10
+        MotionBlur = 5,
+        MotionField = 6,
+        HighPassOnMotionField = 7,
+        MotionFieldOnHighPass = 8,
+        Depth = 9,
+        HighPassOnDepth = 10,
+        MotionFieldOnHighPassOnDepth = 11
     }
 
     [Tooltip("Which image effect should be applied.")] public ShaderActive shaderActive;
@@ -78,7 +79,7 @@ public class ControlShader : MonoBehaviour
 
         // set-up for all shaders regarding the motion field
         motionScript = new MotionField();
-        scaleMotion = motionScript.Scale;
+        scaleMotionField = motionScript.Scale;
         threshold = motionScript.Threshold;
 
         // set-up for all shaders containing some kind of "basic" filtering
@@ -91,7 +92,8 @@ public class ControlShader : MonoBehaviour
         radialBlurOriginYLeftEye = imageFilterScript.OriginYLeftEye;
         radialBlurOriginXRightEye = imageFilterScript.OriginXRightEye;
         radialBlurOriginYRightEye = imageFilterScript.OriginYRightEye;
-        scaleRadial = imageFilterScript.Scale;
+        scaleRadial = imageFilterScript.ScaleRadial;
+        scaleMotionBlur = imageFilterScript.ScaleMotionBlur;
 
         // set-up for all shaders regarding the depth
         depthScript = new Depth();
@@ -146,16 +148,23 @@ public class ControlShader : MonoBehaviour
 
 
         // checking if scale for radial blurred changed
-        if (scaleRadial != imageFilterScript.Scale && scaleRadial >= 0 && scaleRadial <= 100)
+        if (scaleRadial != imageFilterScript.ScaleRadial && scaleRadial >= 0 && scaleRadial <= 100)
         {
-            imageFilterScript.Scale = scaleRadial;
+            imageFilterScript.ScaleRadial = scaleRadial;
+
+        }
+
+        // checking if scale for motion blur changed
+        if (scaleMotionBlur != imageFilterScript.ScaleMotionBlur && scaleMotionBlur >= 0 && scaleMotionBlur <= 100)
+        {
+            imageFilterScript.ScaleMotionBlur = scaleMotionBlur;
 
         }
 
         // checking if scale for motion vectors changed
-        if (scaleMotion != motionScript.Scale && scaleMotion >= 1 && scaleMotion <= 10)
+        if (scaleMotionField != motionScript.Scale && scaleMotionField >= 1 && scaleMotionField <= 10)
         {
-            motionScript.Scale = scaleMotion;
+            motionScript.Scale = scaleMotionField;
         }
 
         // checking if threshold for motion field on high-pass needs to be updated
@@ -210,11 +219,15 @@ public class ControlShader : MonoBehaviour
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
                 imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
                 break;
-            case ShaderActive.Motion: // display motion field as colors
+            case ShaderActive.MotionBlur: // display a motion blur
+                imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.MotionBlur;
+                imageFilterScript.RenderShader(source, destination, imageFilterMaterial);
+                break;
+            case ShaderActive.MotionField: // display motion field as colors
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.OnlyMotion;
                 motionScript.RenderShader(source, destination, motionFieldMaterial);
                 break;
-            case ShaderActive.HighPassOnMotion: // first display motion field as colors and then extract only the high frquencies from it
+            case ShaderActive.HighPassOnMotionField: // first display motion field as colors and then extract only the high frquencies from it
                 var tmp = RenderTexture.GetTemporary(desc);
                 motionScript.CurrentFilterMethod = MotionField.FilterMethod.OnlyMotion;
                 motionScript.RenderShader(source, tmp, motionFieldMaterial);
@@ -222,7 +235,7 @@ public class ControlShader : MonoBehaviour
                 imageFilterScript.RenderShader(tmp, destination, imageFilterMaterial);
                 RenderTexture.ReleaseTemporary(tmp);
                 break;
-            case ShaderActive.MotionOnHighPass: // first extract high frquencies from image and then apply motion field colors on it
+            case ShaderActive.MotionFieldOnHighPass: // first extract high frquencies from image and then apply motion field colors on it
                 var tmp2 = RenderTexture.GetTemporary(desc);
                 imageFilterScript.CurrentFilterMethod = ImageFilter.FilterMethod.HighPass;
                 imageFilterScript.RenderShader(source, tmp2, imageFilterMaterial);
@@ -240,7 +253,7 @@ public class ControlShader : MonoBehaviour
                 imageFilterScript.RenderShader(tmp3, destination, imageFilterMaterial);
                 RenderTexture.ReleaseTemporary(tmp3);
                 break;
-            case ShaderActive.MotionOnHighPassOnDepth: // motion field on high-pass filter on depth 
+            case ShaderActive.MotionFieldOnHighPassOnDepth: // motion field on high-pass filter on depth 
                 var tmp4 = RenderTexture.GetTemporary(desc);
                 var tmp5 = RenderTexture.GetTemporary(desc);
                 depthScript.RenderShader(source, tmp4, depthMaterial);

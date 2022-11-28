@@ -31,6 +31,8 @@ Shader "Optical/ImageFilter"
 
 	// --- GENERAL DATA ---
 	UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex); // main diffuse texture
+	// by unity generated texture that contains information about the 2D movement of each point in clip space between the last frame and the current frame, based on its 3D-movement in the world relative to the camera
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture);
 
 	float4 _MainTex_TexelSize; // contains texture size information for _MainTex
 
@@ -70,7 +72,7 @@ Shader "Optical/ImageFilter"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// Fragment shader; determines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	// here: neighbors on line given by relative position between origin (eye dependent if xr active; else only left eye is used) and pixel
 	fixed4 fragR(v2f IN) : SV_Target
 	{
@@ -92,7 +94,7 @@ Shader "Optical/ImageFilter"
 	}
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// Fragment shader; determines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	// here: neighbors on line given by relative position between origin (eye dependent if xr active; else only left eye is used) and pixel; the farther away the more desaturated are the colors
 	fixed4 fragRD(v2f IN) : SV_Target
 	{
@@ -126,7 +128,7 @@ Shader "Optical/ImageFilter"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// Fragment shader; determines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
 	// here: neighbors on horizontal line through pixel
 	fixed4 fragH(v2f IN) : SV_Target
 	{
@@ -156,7 +158,7 @@ Shader "Optical/ImageFilter"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// Fragment shader; detemines final color for each pixel by subtracting blurred frame from "original" frame (realizes gaussian high-spass filter)
+	// Fragment shader; determines final color for each pixel by subtracting blurred frame from "original" frame (realizes gaussian high-spass filter)
 	fixed4 fragHPF(v2f IN) : SV_Target
 	{
 		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv);
@@ -164,10 +166,31 @@ Shader "Optical/ImageFilter"
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// Fragment shader; detemines final color for each pixel by subtracting blurred frame from "original" frame, weighting it and then adding it back to the original image (realizes image sharpening)
+	// Fragment shader; determines final color for each pixel by subtracting blurred frame from "original" frame, weighting it and then adding it back to the original image (realizes image sharpening)
 	fixed4 fragSH(v2f IN) : SV_Target
 	{
 		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) + _SharpeningFactor * (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv));
+	}
+
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Fragment shader; determines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
+	// here: neighbors on line given by motion vector of pixel
+	fixed4 fragM(v2f IN) : SV_Target
+	{
+		float2 diffVec = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).rg; // getting motion vector
+		diffVec *= unity_DeltaTime.y; // scaling vector so it's visible; making it frame-rate independent
+
+		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0]; // init final color
+
+		for (int i = 1; i < _FinalKernelSize; i++)
+		{
+			float2 offset = _Offset[i] * _MainTex_TexelSize.xy * diffVec * _Scale; // offset of sample point; the farther the point is away from the origin the more it is blurred
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
+			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
+		}
+
+		return col;
 	}
 
 	ENDCG
@@ -240,6 +263,17 @@ Shader "Optical/ImageFilter"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment fragSH
+			#pragma multi_compile_instancing
+
+			ENDCG
+		}
+
+		// 6: motion blur
+		Pass
+		{
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment fragM
 			#pragma multi_compile_instancing
 
 			ENDCG
