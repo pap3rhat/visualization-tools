@@ -35,6 +35,7 @@ public class ControlShaderEditor : Editor
     bool setUpGroup, additionalSettings = true;
     #endregion
 
+    /* Method that gets called when object becomes enabled and active */
     private void OnEnable()
     {
         cam = serializedObject.FindProperty("cam");
@@ -61,9 +62,10 @@ public class ControlShaderEditor : Editor
         shaderActive = serializedObject.FindProperty("shaderActive");
     }
 
+    /* Method that makes it possible to customize inspector */
     public override void OnInspectorGUI()
     {
-        // getting acces to COntrolShader script
+        // getting acces to C0ntrolShader script
         ControlShader controlShader = (ControlShader)target;
 
         serializedObject.Update();
@@ -85,67 +87,82 @@ public class ControlShaderEditor : Editor
         EditorGUILayout.LabelField("Shader selection");
         EditorGUILayout.PropertyField(shaderActive);
 
-        // make a section for the shader settings
-        if (controlShader.shaderActive == ControlShader.ShaderActive.Depth)
+        // make a section for the shader settings depending on which shader is currently active
+        switch (controlShader.shaderActive)
         {
-            additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
-            EditorGUILayout.PropertyField(colorNear);
-            EditorGUILayout.PropertyField(colorFar);
-            EditorGUILayout.EndFoldoutHeaderGroup();
-        }
-        else if (controlShader.shaderActive != ControlShader.ShaderActive.None && controlShader.shaderActive != ControlShader.ShaderActive.MotionField && controlShader.shaderActive != ControlShader.ShaderActive.Depth)
-        {
-            additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
-            if (additionalSettings)
-            {
-
+            case ControlShader.ShaderActive.RadialBlur:
+            case ControlShader.ShaderActive.RadialBlurDesat:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
                 EditorGUILayout.PropertyField(kernelSize);
-
-                if (controlShader.shaderActive == ControlShader.ShaderActive.RadialBlur || controlShader.shaderActive == ControlShader.ShaderActive.RadialBlurDesat)
+                if (controlShader.XrActive)
                 {
-                    if (controlShader.XrActive)
-                    {
-                        EditorGUILayout.PropertyField(radialBlurOriginXLeftEye);
-                        EditorGUILayout.PropertyField(radialBlurOriginYLeftEye);
-                        EditorGUILayout.PropertyField(radialBlurOriginXRightEye);
-                        EditorGUILayout.PropertyField(radialBlurOriginYRightEye);
-                    }
-                    else
-                    {
-                        EditorGUILayout.PropertyField(radialBlurOriginX);
-                        EditorGUILayout.PropertyField(radialBlurOriginY);
-                    }
-
-                    EditorGUILayout.PropertyField(scaleRadial);
+                    EditorGUILayout.PropertyField(radialBlurOriginXLeftEye);
+                    EditorGUILayout.PropertyField(radialBlurOriginYLeftEye);
+                    EditorGUILayout.PropertyField(radialBlurOriginXRightEye);
+                    EditorGUILayout.PropertyField(radialBlurOriginYRightEye);
                 }
-                else if (controlShader.shaderActive == ControlShader.ShaderActive.MotionBlur)
+                else
                 {
-                    EditorGUILayout.PropertyField(scaleMotionBlur);
+                    EditorGUILayout.PropertyField(radialBlurOriginX);
+                    EditorGUILayout.PropertyField(radialBlurOriginY);
                 }
-
-                if (controlShader.shaderActive == ControlShader.ShaderActive.MotionFieldOnHighPass || controlShader.shaderActive == ControlShader.ShaderActive.MotionFieldOnHighPassOnDepth)
-                {
-                    EditorGUILayout.PropertyField(scaleMotionField);
-                    EditorGUILayout.PropertyField(threshold);
-                }
-
-                if (controlShader.shaderActive == ControlShader.ShaderActive.MotionFieldOnHighPassOnDepth || controlShader.shaderActive == ControlShader.ShaderActive.HighPassOnDepth)
-                {
-                    EditorGUILayout.PropertyField(colorNear);
-                    EditorGUILayout.PropertyField(colorFar);
-                }
-
-            }
-            EditorGUILayout.EndFoldoutHeaderGroup();
-        }
-
-        if (controlShader.shaderActive == ControlShader.ShaderActive.MotionField || controlShader.shaderActive == ControlShader.ShaderActive.HighPassOnMotionField)
-        {
-            EditorGUILayout.PropertyField(scaleMotionField);
+                EditorGUILayout.PropertyField(scaleRadial);
+                break;
+            case ControlShader.ShaderActive.GaussianBlur:
+            case ControlShader.ShaderActive.Sharpening:
+            case ControlShader.ShaderActive.HighPass:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.MotionBlur:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.PropertyField(scaleMotionBlur);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.MotionField:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(scaleMotionField);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.HighPassOnMotionField:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.PropertyField(scaleMotionField);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.MotionFieldOnHighPass:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.PropertyField(scaleMotionField);
+                EditorGUILayout.PropertyField(threshold);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.Depth:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(colorNear);
+                EditorGUILayout.PropertyField(colorFar);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.HighPassOnDepth:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.PropertyField(colorNear);
+                EditorGUILayout.PropertyField(colorFar);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
+            case ControlShader.ShaderActive.MotionFieldOnHighPassOnDepth:
+                additionalSettings = EditorGUILayout.BeginFoldoutHeaderGroup(additionalSettings, "Additional settings for active shader");
+                EditorGUILayout.PropertyField(kernelSize);
+                EditorGUILayout.PropertyField(scaleMotionField);
+                EditorGUILayout.PropertyField(threshold);
+                EditorGUILayout.PropertyField(colorNear);
+                EditorGUILayout.PropertyField(colorFar);
+                EditorGUILayout.EndFoldoutHeaderGroup();
+                break;
         }
 
         serializedObject.ApplyModifiedProperties();
     }
-
-
 }
