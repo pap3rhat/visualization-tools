@@ -13,6 +13,8 @@ Shader "Optical/Depth"
 	{
 		float4 pos : POSITION; // position of vertex in world coordinates (WORLD POSITION)
 		float2 uv : TEXCOORD0; // uv coordinate
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID // single pass instancing support
 	};
 
 	// vertex shader to fragment shader
@@ -20,15 +22,17 @@ Shader "Optical/Depth"
 	{
 		float4 pos : SV_POSITION; // position of vertex in camera coordinates (CLIP SPACE POISION)
 		float2 uv : TEXCOORD0; // uv coordinate
+
+		UNITY_VERTEX_OUTPUT_STEREO // single pass instancing support
 	};
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// --- GENERAL DATA ---
-	sampler2D _MainTex; // main diffuse texture
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex); // main diffuse texture
 
 	// by unity generated texture that contains information about 
-	sampler2D_float _CameraDepthTexture;
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_CameraDepthTexture);
 
 	float4 _ColorNear; // determines color of near objects
 	float4 _ColorFar; // determines color of far objects
@@ -39,6 +43,12 @@ Shader "Optical/Depth"
 	v2f vert(a2v IN)
 	{
 		v2f OUT;
+
+		// single pass instancing support
+		UNITY_SETUP_INSTANCE_ID(IN);
+		UNITY_INITIALIZE_OUTPUT(v2f, OUT);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
 		OUT.pos = UnityObjectToClipPos(IN.pos);
 		OUT.uv = IN.uv;
 		return OUT;
