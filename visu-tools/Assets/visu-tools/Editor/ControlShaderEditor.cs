@@ -51,7 +51,7 @@ public class ControlShaderEditor : Editor
         radialBlurOriginYLeftEye = serializedObject.FindProperty("radialBlurOriginYLeftEye");
         radialBlurOriginXRightEye = serializedObject.FindProperty("radialBlurOriginXRightEye");
         radialBlurOriginYRightEye = serializedObject.FindProperty("radialBlurOriginYRightEye");
-        scaleRadial = serializedObject.FindProperty("scale");
+        scaleRadial = serializedObject.FindProperty("scaleRadial");
 
         colorNear = serializedObject.FindProperty("colorNear");
         colorFar = serializedObject.FindProperty("colorFar");
@@ -105,7 +105,6 @@ public class ControlShaderEditor : Editor
                     {
                         EditorGUILayout.PropertyField(radialBlurOriginXLeftEye);
                         EditorGUILayout.PropertyField(radialBlurOriginYLeftEye);
-                        EditorGUILayout.Space(2);
                         EditorGUILayout.PropertyField(radialBlurOriginXRightEye);
                         EditorGUILayout.PropertyField(radialBlurOriginYRightEye);
                     }
