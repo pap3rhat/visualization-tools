@@ -5,12 +5,12 @@ Shader "Optical/ImageFilter"
 		_MainTex("Texture", 2D) = "white" {}
 	}
 
-	CGINCLUDE
-	#include "UnityCG.cginc"
-	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
+		CGINCLUDE
+#include "UnityCG.cginc"
+#include "Assets/visu-tools/Shader/ColorMethods.cginc"
 
-	// appdata to vertex shader
-	struct a2v
+		// appdata to vertex shader
+		struct a2v
 	{
 		float4 pos : POSITION; // position of vertex in world coordinates (WORLD POSITION)
 		float2 uv : TEXCOORD0; // uv coordinate
@@ -41,6 +41,10 @@ Shader "Optical/ImageFilter"
 	// --- DATA FOR RADIAL BLUR ---
 	float _OriginX; // determins x-coordinate of blur origin
 	float _OriginY; // determins y-coordiante of blur origin
+	float _OriginXLeftEye; // determins x-coordinate of blur origin for left eye
+	float _OriginYLeftEye; // determins y-coordiante of blur origin for left eye
+	float _OriginXRightEye; // determins x-coordinate of blur origin for right eye
+	float _OriginYRightEye; // determins y-coordiante of blur origin for right eye
 	float _Scale; // scales the strength of the blur effect
 
 	// --- DATA FOR HIGH-PASS AND SHARPENING ---
@@ -67,10 +71,13 @@ Shader "Optical/ImageFilter"
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
-	// here: neighbors on line given by relative position between origin and pixel
+	// here: neighbors on line given by relative position between origin (eye dependent if xr active; else only left eye is used) and pixel
 	fixed4 fragR(v2f IN) : SV_Target
 	{
-		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+		float eye = unity_StereoEyeIndex; // which eye is curretnly rendered? 0:left, 1:right
+
+		float2 diffVec = (IN.uv - float2(_OriginXLeftEye, _OriginYLeftEye)) * (1 - eye) + (IN.uv - float2(_OriginXRightEye, _OriginYRightEye)) * eye; // vector from origin of blur to current pixel
 
 		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0]; // init final color
 
@@ -80,16 +87,19 @@ Shader "Optical/ImageFilter"
 			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv + offset)) * _Kernel[i];
 			col += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, saturate(IN.uv - offset)) * _Kernel[i];
 		}
-		
+
 		return col;
 	}
 
 	//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Fragment shader; detemines color for each pixel by looking at its own color as well as the neighboring pixels color and weighting them according to the kernel values
-	// here: neighbors on line given by relative position between origin and pixel; the farther away the more desaturated are the colors
+	// here: neighbors on line given by relative position between origin (eye dependent if xr active; else only left eye is used) and pixel; the farther away the more desaturated are the colors
 	fixed4 fragRD(v2f IN) : SV_Target
 	{
-		float2 diffVec = IN.uv - float2(_OriginX, _OriginY); // vector from origin of blur to current pixel
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+		float eye = unity_StereoEyeIndex; // which eye is curretnly rendered? 0:left, 1:right
+
+		float2 diffVec = (IN.uv - float2(_OriginXLeftEye, _OriginYLeftEye)) * (1 - eye) + (IN.uv - float2(_OriginXRightEye, _OriginYRightEye)) * eye; // vector from origin of blur to current pixel
 
 		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0]; // init final color
 
@@ -101,15 +111,16 @@ Shader "Optical/ImageFilter"
 		}
 
 		// getting maximal distance from blur origin to a pixel
-		float maxDist = max(length(float2(0, 0) - float2(_OriginX, _OriginY)), length(float2(0, 1) - float2(_OriginX, _OriginY)));
-		maxDist = max(maxDist, length(float2(1, 0) - float2(_OriginX, _OriginY)));
-		maxDist = max(maxDist, length(float2(1, 1) - float2(_OriginX, _OriginY)));
+		float2 leftRightOrigin = (float2(_OriginXLeftEye, _OriginYLeftEye) * (1 - eye)) + (float2(_OriginXRightEye, _OriginYRightEye) * eye);
+		float maxDist = max(length(float2(0, 0) - leftRightOrigin), length(float2(0, 1) - leftRightOrigin));
+		maxDist = max(maxDist, length(float2(1, 0) - leftRightOrigin));
+		maxDist = max(maxDist, length(float2(1, 1) - leftRightOrigin));
 
-	
+
 		// linear interpolation between 'normal' color and grayscale color
-		float scale = (maxDist - (maxDist - length(diffVec)))/maxDist; // the farther away from origin a pixel is the more desaturated (gray) it will be
+		float scale = (maxDist - (maxDist - length(diffVec))) / maxDist; // the farther away from origin a pixel is the more desaturated (gray) it will be
 		float3 lerped = lerp(col.xyz, intensity(col).xxx, scale);
-		
+
 		return float4(lerped, 1);
 	}
 

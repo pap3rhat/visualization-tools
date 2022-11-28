@@ -13,6 +13,8 @@ using UnityEngine.XR;
 public class ImageFilter
 {
     // --- GENERAL DATA ---
+
+    #region General data
     private enum Pass // determines which passes in shader need to be used
     {
         Radial = 0,
@@ -73,37 +75,26 @@ public class ImageFilter
     private List<float> kernel;
     private List<float> offset;
     private ComputeBuffer kernelBuf, offsetBuf;
+    #endregion
 
     // --- DATA FOR RADIAL BLUR ---
 
-    // ínformation about origin of blur effect for radial blur
-    private float originX;
-    public float OriginX
-    {
-        get { return originX; }
-        set
-        {
-            if (value >= 0 && value <= 1) // check if value is within bounds
-            {
-                originX = value;
-            }
-            else
-            {
-                Debug.Log("The origin coordinates for x have to be between 0 and 1!");
-            }
-        }
-    }
-    private const float DEFAULT_ORIGIN_X = 0.5f; // default is pixel in center of screen along x-axis
+    #region Radial blur data
 
-    private float originY;
-    public float OriginY
+    // ínformation about origin of blur effect for radial blur
+   
+    private const float DEFAULT_ORIGIN_X = 0.5f; // default is pixel in center of screen along x-axis
+    private const float DEFAULT_ORIGIN_Y = 0.5f; // default is pixel in center of screen along y-axis
+
+    private float originYLeftEye; // information for left eye; also used if only one eye is rendered 
+    public float OriginYLeftEye
     {
-        get { return originY; }
+        get { return originYLeftEye; }
         set
         {
             if (value >= 0 && value <= 1) // check if value is within bounds
             {
-                originY = value;
+                originYLeftEye = value;
             }
             else
             {
@@ -111,7 +102,57 @@ public class ImageFilter
             }
         }
     }
-    private const float DEFAULT_ORIGIN_Y = 0.5f; // default is pixel in center of screen along y-axis
+
+    private float originYRightEye;
+    public float OriginYRightEye  // information for right eye
+    {
+        get { return originYRightEye; }
+        set
+        {
+            if (value >= 0 && value <= 1) // check if value is within bounds
+            {
+                originYRightEye = value;
+            }
+            else
+            {
+                Debug.Log("The origin coordinates for y have to be between 0 and 1!");
+            }
+        }
+    }
+
+    private float originXLeftEye;
+    public float OriginXLeftEye
+    {
+        get { return originXLeftEye; }
+        set
+        {
+            if (value >= 0 && value <= 1) // check if value is within bounds
+            {
+                originXLeftEye = value;
+            }
+            else
+            {
+                Debug.Log("The origin coordinates for y have to be between 0 and 1!");
+            }
+        }
+    }
+
+    private float originXRightEye;
+    public float OriginXRightEye
+    {
+        get { return originXRightEye; }
+        set
+        {
+            if (value >= 0 && value <= 1) // check if value is within bounds
+            {
+                originXRightEye = value;
+            }
+            else
+            {
+                Debug.Log("The origin coordinates for y have to be between 0 and 1!");
+            }
+        }
+    }
 
     private float scale;
     public float Scale
@@ -131,6 +172,8 @@ public class ImageFilter
     }
     private const float DEFAULT_SCALE = 5f;
 
+    #endregion
+
     // --- DATA FOR SHARPENING ---
     private const float sharpeningFactor = 0.85f; // constant for image sharpening (could be made variable and set by user)
 
@@ -142,8 +185,10 @@ public class ImageFilter
         kernelSize = DEFAULT_KERNEL_SIZE; // init kernelSize
 
         // setting up default origin and scale of radial blur
-        originX = DEFAULT_ORIGIN_X;
-        originY = DEFAULT_ORIGIN_Y;
+        originXLeftEye = DEFAULT_ORIGIN_X;
+        originXRightEye = DEFAULT_ORIGIN_X;
+        originYLeftEye = DEFAULT_ORIGIN_Y;
+        originYRightEye = DEFAULT_ORIGIN_Y;
         scale = DEFAULT_SCALE;
     }
 
@@ -166,14 +211,18 @@ public class ImageFilter
         switch (currentFilterMethod)
         {
             case FilterMethod.Radial: // use radial blur
-                material.SetFloat("_OriginX", originX);
-                material.SetFloat("_OriginY", originY);
+                material.SetFloat("_OriginXLeftEye", originXLeftEye);
+                material.SetFloat("_OriginYLeftEye", originYLeftEye);
+                material.SetFloat("_OriginXRightEye", originXRightEye);
+                material.SetFloat("_OriginYRightEye", originYRightEye);
                 material.SetFloat("_Scale", scale);
                 Graphics.Blit(source, destination, material, (int)Pass.Radial);
                 break;
             case FilterMethod.RadialDesat: // use radial blur and desaturate colors based on distance from blur origin
-                material.SetFloat("_OriginX", originX);
-                material.SetFloat("_OriginY", originY);
+                material.SetFloat("_OriginXLeftEye", originXLeftEye);
+                material.SetFloat("_OriginYLeftEye", originYLeftEye);
+                material.SetFloat("_OriginXRightEye", originXRightEye);
+                material.SetFloat("_OriginYRightEye", originYRightEye);
                 material.SetFloat("_Scale", scale);
                 Graphics.Blit(source, destination, material, (int)Pass.RadialDesat);
                 break;
@@ -258,6 +307,8 @@ public class ImageFilter
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
     // --- HELPER FUNCTIONS ---
 
+    #region Helper
+
     /* Calculates guassian kernel by using pascals triangle as described in "Bildverarbeitung" by Franz Kummmert and https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/ */
     private void CalculateKernel()
     {
@@ -326,5 +377,7 @@ public class ImageFilter
         offset = newOffset;
         kernel = newKernel;
     }
+
+    #endregion
 }
 

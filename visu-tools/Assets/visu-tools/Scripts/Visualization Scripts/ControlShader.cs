@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -22,12 +23,27 @@ public class ControlShader : MonoBehaviour
     private ImageFilter imageFilterScript;
     [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
     [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
+    [Tooltip("Offset of origin of radial blur effect for the left eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXLeftEye, radialBlurOriginYLeftEye;
+    [Tooltip("Offset of origin of radial blur effect for the right eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXRightEye, radialBlurOriginYRightEye;
     [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scale;
 
     // necessary information for all shaders containing the depth
     private Depth depthScript;
     [Tooltip("Color of the objects close to the camera.")] [ColorUsage(true)] [SerializeField] private Color colorNear;
     [Tooltip("Color of the objects farthest from the camera.")] [ColorUsage(true)] [SerializeField] private Color colorFar;
+
+    // information if xr is used
+    private bool xrActive;
+    public bool XrActive
+    {
+        get { return xrActive; }
+        set
+        {
+            var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
+            SubsystemManager.GetInstances<XRDisplaySubsystem>(xrDisplaySubsystems);
+            xrActive = xrDisplaySubsystems.Count > 0;
+        }
+    }
 
     public enum ShaderActive
     {
@@ -67,14 +83,21 @@ public class ControlShader : MonoBehaviour
         imageFilterScript = new ImageFilter();
         imageFilterScript.KernelSetUp(imageFilterMaterial);
         kernelSize = imageFilterScript.KernelSize;
-        radialBlurOriginX = imageFilterScript.OriginX;
-        radialBlurOriginY = imageFilterScript.OriginY;
+        radialBlurOriginX = imageFilterScript.OriginXLeftEye;
+        radialBlurOriginY = imageFilterScript.OriginYLeftEye;
+        radialBlurOriginXLeftEye = imageFilterScript.OriginXLeftEye;
+        radialBlurOriginYLeftEye = imageFilterScript.OriginYLeftEye;
+        radialBlurOriginXRightEye = imageFilterScript.OriginXRightEye;
+        radialBlurOriginYRightEye = imageFilterScript.OriginYRightEye;
         scale = imageFilterScript.Scale;
 
         // set-up for all shaders regarding the depth
         depthScript = new Depth();
         colorNear = depthScript.ColorNear;
         colorFar = depthScript.ColorFar;
+
+        // checking if xr is being used (check happens above, the true here will be overwritten by either true or false)
+        XrActive = true;
     }
 
     /* Method that is being called every frame */
@@ -88,14 +111,37 @@ public class ControlShader : MonoBehaviour
         }
 
         // checking if origin for radial blur changed
-        if (radialBlurOriginX != imageFilterScript.OriginX && radialBlurOriginX >= 0 && radialBlurOriginX <= 1)
+        if (!xrActive)
         {
-            imageFilterScript.OriginX = radialBlurOriginX;
+            if (radialBlurOriginX != imageFilterScript.OriginXLeftEye && radialBlurOriginX >= 0 && radialBlurOriginX <= 1)
+            {
+                imageFilterScript.OriginXLeftEye = radialBlurOriginX;
+            }
+            if (radialBlurOriginY != imageFilterScript.OriginYLeftEye && radialBlurOriginY >= 0 && radialBlurOriginY <= 1)
+            {
+                imageFilterScript.OriginYLeftEye = radialBlurOriginY;
+            }
         }
-        if (radialBlurOriginY != imageFilterScript.OriginY && radialBlurOriginY >= 0 && radialBlurOriginY <= 1)
+        else
         {
-            imageFilterScript.OriginY = radialBlurOriginY;
+            if (radialBlurOriginXLeftEye != imageFilterScript.OriginXLeftEye && radialBlurOriginXLeftEye >= 0 && radialBlurOriginXLeftEye <= 1)
+            {
+                imageFilterScript.OriginXLeftEye = radialBlurOriginXLeftEye;
+            }
+            if (radialBlurOriginYLeftEye != imageFilterScript.OriginYLeftEye && radialBlurOriginYLeftEye >= 0 && radialBlurOriginYLeftEye <= 1)
+            {
+                imageFilterScript.OriginYLeftEye = radialBlurOriginYLeftEye;
+            }
+            if (radialBlurOriginXRightEye != imageFilterScript.OriginXRightEye && radialBlurOriginXRightEye >= 0 && radialBlurOriginXRightEye <= 1)
+            {
+                imageFilterScript.OriginXRightEye = radialBlurOriginXRightEye;
+            }
+            if (radialBlurOriginYRightEye != imageFilterScript.OriginYRightEye && radialBlurOriginYRightEye >= 0 && radialBlurOriginYRightEye <= 1)
+            {
+                imageFilterScript.OriginYRightEye = radialBlurOriginYRightEye;
+            }
         }
+
 
         // cehcking if scale for radial blurred changed
         if (scale != imageFilterScript.Scale && scale >= 0 && scale <= 100)

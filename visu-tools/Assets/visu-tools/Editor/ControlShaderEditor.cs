@@ -18,6 +18,10 @@ public class ControlShaderEditor : Editor
     SerializedProperty kernelSize;
     SerializedProperty radialBlurOriginX;
     SerializedProperty radialBlurOriginY;
+    SerializedProperty radialBlurOriginXLeftEye;
+    SerializedProperty radialBlurOriginYLeftEye;
+    SerializedProperty radialBlurOriginXRightEye;
+    SerializedProperty radialBlurOriginYRightEye;
     SerializedProperty scale;
 
     SerializedProperty colorNear;
@@ -41,6 +45,10 @@ public class ControlShaderEditor : Editor
         kernelSize = serializedObject.FindProperty("kernelSize");
         radialBlurOriginX = serializedObject.FindProperty("radialBlurOriginX");
         radialBlurOriginY = serializedObject.FindProperty("radialBlurOriginY");
+        radialBlurOriginXLeftEye = serializedObject.FindProperty("radialBlurOriginXLeftEye");
+        radialBlurOriginYLeftEye = serializedObject.FindProperty("radialBlurOriginYLeftEye");
+        radialBlurOriginXRightEye = serializedObject.FindProperty("radialBlurOriginXRightEye");
+        radialBlurOriginYRightEye = serializedObject.FindProperty("radialBlurOriginYRightEye");
         scale = serializedObject.FindProperty("scale");
 
         colorNear = serializedObject.FindProperty("colorNear");
@@ -91,8 +99,20 @@ public class ControlShaderEditor : Editor
 
                 if (controlShader.shaderActive == ControlShader.ShaderActive.RadialBlur || controlShader.shaderActive == ControlShader.ShaderActive.RadialBlurDesat)
                 {
-                    EditorGUILayout.PropertyField(radialBlurOriginX);
-                    EditorGUILayout.PropertyField(radialBlurOriginY);
+                    if (controlShader.XrActive)
+                    {
+                        EditorGUILayout.PropertyField(radialBlurOriginXLeftEye);
+                        EditorGUILayout.PropertyField(radialBlurOriginYLeftEye);
+                        EditorGUILayout.Space(2);
+                        EditorGUILayout.PropertyField(radialBlurOriginXRightEye);
+                        EditorGUILayout.PropertyField(radialBlurOriginYRightEye);
+                    }
+                    else
+                    {
+                        EditorGUILayout.PropertyField(radialBlurOriginX);
+                        EditorGUILayout.PropertyField(radialBlurOriginY);
+                    }
+                    
                     EditorGUILayout.PropertyField(scale);
                 }
 
