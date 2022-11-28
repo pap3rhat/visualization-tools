@@ -6,6 +6,9 @@ using UnityEngine;
 /* Script that contains function regarding the motion field. */
 public class MotionField
 {
+    // --- GENERAL DATA ---
+
+    #region General data
     private enum Pass // determines which passes in shader need to be used
     {
         OnlyMotion = 0,
@@ -35,6 +38,12 @@ public class MotionField
         }
     }
 
+    #endregion
+
+    // --- DATA FOR SCALING MOTION VECTORS ---
+
+    #region Scale data
+
     private const float DEFAULT_SCALE = 1f;
     private float scale;
     public float Scale
@@ -53,6 +62,12 @@ public class MotionField
 
         }
     }
+
+    #endregion
+
+    // --- DATA FOR MOTION ON TOP OF HIGH-PASS ---
+
+    #region Data for Motion field effect on top of high-pass effect
 
     private const float DEFAULT_THRESHOLD = 0.0075f;
     private float threshold;
@@ -73,6 +88,8 @@ public class MotionField
         }
     }
 
+    #endregion
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
 
@@ -84,6 +101,8 @@ public class MotionField
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- FUNCTIONS FOR CONTROL SHADER SCRIPT TO USE ---
+
+    #region To be called method
 
     /* Method that renders the image and modifies the final image the user will see.
      * Should be called from another script within the OnRenderImage() method. 
@@ -105,4 +124,6 @@ public class MotionField
                 break;
         }
     }
+
+    #endregion
 }

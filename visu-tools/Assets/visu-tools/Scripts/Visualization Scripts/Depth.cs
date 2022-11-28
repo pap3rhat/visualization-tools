@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Depth
 {
+    // --- COLOR DATA ---
+
+    #region Color data
+
     private Color colorNear;
     public Color ColorNear
     {
@@ -20,6 +24,8 @@ public class Depth
     }
     private Color DEFAULT_COLOR_FAR = new Color(0f, 0f, 0f, 1f);
 
+    #endregion
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
     public Depth()
@@ -32,6 +38,8 @@ public class Depth
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- FUNCTIONS FOR CONTROL SHADER SCRIPT TO USE ---
 
+    #region To be called method
+
     /* Method that renders the image and modifies the final image the user will see.
      * Should be called from another script within the OnRenderImage() method. 
      * Material has to use Optical/BasicImageFiltering as a shader!
@@ -42,4 +50,6 @@ public class Depth
         material.SetColor("_ColorFar", colorFar);
         Graphics.Blit(source, destination, material);
     }
+
+    #endregion
 }

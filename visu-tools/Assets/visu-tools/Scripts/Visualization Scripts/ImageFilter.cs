@@ -5,9 +5,11 @@ using UnityEngine.XR;
 
 /* Script that contains functions for image filtering.
  * Radial: Removes high frequencies from image (around an origin).
+ * Radial Desaturation: Removes high frequencies from image (around an origin). Desaturestes colors based on their distance to an origin.
  * Blur: Removes high frequencies from image.
  * High-Pass: Removes low frequencies from image.
  * Sharpen: Sharpens the image by adding the images high frequencies on top of it.
+ * Motion Blur:  Removes high frequencies from image (based on motion of every pixel between last and current frame).
  * The 'strength' of each effect is determined by the kernel size. The bigger the kernel the stronger the effect.
  */
 public class ImageFilter
@@ -194,7 +196,10 @@ public class ImageFilter
     #endregion
 
     // --- DATA FOR SHARPENING ---
+
+    #region Sharpening data
     private const float sharpeningFactor = 0.85f; // constant for image sharpening (could be made variable and set by user)
+    #endregion
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
@@ -214,6 +219,8 @@ public class ImageFilter
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- FUNCTIONS FOR CONTROL SHADER SCRIPT TO USE ---
+
+    #region To be called methods
 
     /* Method that renders the image and modifies the final image the user will see.
      * Should be called from another script within the OnRenderImage() method. 
@@ -328,6 +335,8 @@ public class ImageFilter
             offsetBuf.Dispose();
         }
     }
+
+    #endregion
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
     // --- HELPER FUNCTIONS ---
