@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.IO;
+using System;
 
 /* Script that records positions and rotations of GameObject called player.
  * Can be used if no other way of generating log-files exists in programm.
@@ -7,7 +8,7 @@ using System.IO;
  */
 public class CSVRecorder : MonoBehaviour
 {
-    private string filename = ""; 
+    private string filename = "";
     private bool recording = false; // do not start with recording yet
 
     private GameObject player;
@@ -37,7 +38,7 @@ public class CSVRecorder : MonoBehaviour
             return;
         }
 
-        filename = Application.dataPath + "/Resources/Log Files/logfile.csv"; // TODO: figure out how to name properly
+        filename = Application.dataPath + "/Resources/Log Files/logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
 
         // maing sure flaot numbers are stored with a "." as a comma
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
