@@ -18,18 +18,18 @@ public class ControlShader : MonoBehaviour
 
     // necessary information for all shaders containing the motion field
     private MotionField motionScript;
-    [Tooltip("How strong should the motion vectors be scaled.")] [Range(1f, 10)] [SerializeField] private float scaleMotionField;
+    [Tooltip("How strong should the motion vectors be scaled.")] [Range(1f, 10)] [SerializeField] public float scaleMotionField;
     [Tooltip("How intense needs a pixel value to be after high-pass filtering in order to render motion field for it. If intensity is below threshold, pixel will show up black.")]
-    [Range(0f, 0.25f)] [SerializeField] private float threshold;
+    [Range(0f, 0.25f)] [SerializeField] public float threshold;
 
     // necessary information for all shaders containing some kind of filtering (radial blur, guassian blur, high-pass filter, image sharpening)
     private ImageFilter imageFilterScript;
-    [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] private int kernelSize;
-    [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginX, radialBlurOriginY;
-    [Tooltip("Offset of origin of radial blur effect for the left eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXLeftEye, radialBlurOriginYLeftEye;
-    [Tooltip("Offset of origin of radial blur effect for the right eye.")] [Range(0f, 1f)] [SerializeField] private float radialBlurOriginXRightEye, radialBlurOriginYRightEye;
-    [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] private float scaleRadial;
-    [Tooltip("Strength of motion blur effect.")] [Range(0f, 10f)] [SerializeField] private float scaleMotionBlur;
+    [Tooltip("Size of the gaussian kernel used for image filtering. The bigger the stronger the effect.")] [Range(5, 127)] [SerializeField] public int kernelSize;
+    [Tooltip("Offset of origin of radial blur effect.")] [Range(0f, 1f)] [SerializeField] public float radialBlurOriginX, radialBlurOriginY;
+    [Tooltip("Offset of origin of radial blur effect for the left eye.")] [Range(0f, 1f)] [SerializeField] public float radialBlurOriginXLeftEye, radialBlurOriginYLeftEye;
+    [Tooltip("Offset of origin of radial blur effect for the right eye.")] [Range(0f, 1f)] [SerializeField] public float radialBlurOriginXRightEye, radialBlurOriginYRightEye;
+    [Tooltip("Strength of radial blur effect.")] [Range(0f, 10f)] [SerializeField] public float scaleRadial;
+    [Tooltip("Strength of motion blur effect.")] [Range(0f, 10f)] [SerializeField] public float scaleMotionBlur;
     // necessary information for all shaders containing the depth
     private Depth depthScript;
     [Tooltip("Color of the objects close to the camera.")] [ColorUsage(true)] [SerializeField] private Color colorNear;
