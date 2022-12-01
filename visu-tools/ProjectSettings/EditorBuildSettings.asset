@@ -6,17 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Main Menu.unity
+    path: Assets/Scenes/Menus/Main Menu.unity
     guid: 4e580ea24e84a48449bf23b4560f43e9
   - enabled: 1
-    path: Assets/Scenes/Record World.unity
+    path: Assets/Scenes/Worlds/Record World.unity
     guid: 56609f78db64e5d4798a44160ea5e104
   - enabled: 1
-    path: Assets/Scenes/Test World.unity
+    path: Assets/Scenes/Worlds/Test World.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/Scenes/Replay World.unity
+    path: Assets/Scenes/Worlds/Replay World.unity
     guid: e8000d41317167744a48c7f7f2d24dde
+  - enabled: 1
+    path: Assets/Scenes/Menus/Replay Menu.unity
+    guid: eeffad674addeda4e98c2b8231758dc0
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 94c5e5676f4cb9e4e8693667c2d6027f, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: c40f73126d668904795a8216359d5b93, type: 2}

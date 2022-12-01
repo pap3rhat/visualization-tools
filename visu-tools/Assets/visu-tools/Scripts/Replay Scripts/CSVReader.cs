@@ -23,12 +23,12 @@ public class CSVReader
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
 
-    // construct without specific subfolder -> files are just in Resources folder
-    // WARNING: There cannot be other textfiles in a Resources folder in that case. Be aware of that if you for example use TextMesh Pro!
+    // construct with default subfolder "Log Files"
     public CSVReader(FileList fileList, ActiveFile activeFile)
     {
         this.fileList = fileList;
         this.activeFile = activeFile;
+        this.subfolderPath = "Log Files";
     }
 
     // construct with specific subfolder -> files are in Resources/subfolderPath

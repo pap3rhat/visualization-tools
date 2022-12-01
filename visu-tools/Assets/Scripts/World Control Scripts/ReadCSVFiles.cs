@@ -5,7 +5,6 @@ public class ReadCSVFiles : MonoBehaviour
 
     [SerializeField] private FileList fileList;
     [SerializeField] private ActiveFile activeFile;
-    [SerializeField] private string subfolderPath;
 
     private CSVReader csvReader;
 
@@ -13,7 +12,7 @@ public class ReadCSVFiles : MonoBehaviour
 
     private void Awake()
     {
-        csvReader = new CSVReader(fileList, activeFile, subfolderPath);
+        csvReader = new CSVReader(fileList, activeFile, "Log Files");
         csvReader.LoadAllFilesFromResources(); // loading all files; for now: setting first one as active and reading it in
     }
 }
