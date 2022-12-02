@@ -4,7 +4,7 @@
 <a name="readme-top"></a>
 <h1 align="center">visu-tools</h1>
 <p align="center">
-Unity package that allows you to apply full screen post-processing effects to your project in real time.
+Unity package that allows you to apply full screen post-processing effects to your project in real time. Also includes the option to record and later replay your movement.
 </p>
 </div>
 
@@ -45,7 +45,7 @@ This repository contains the code for my bachelors thesis at University of Biele
 The topic is: *"Entwicklung von Visualisierungswerkzeugen zur Auswertung von VR-Navigationsexperimenten beim Menschen"*(Development of visualization tools that can be used to evaluate vr-navigation-experiments performed by humans).
 
 More precisely the task was to find ways of visualizing "meta-data" that humans might use when navigating through a vr-world. This "meta-data" includes things such as how the environment moves in respect to oneself or how sharp/blurry one perceives parts of the environment. <br />
-The task also included...\TODO
+The task also included creating a system to replay .csv files that contain movement (position + orientation) data. In order to always have access to such files this porject also contains recorder.
 
 *Why is it relevant to be able to have such tools?*
 \TODO
@@ -61,13 +61,14 @@ The vr-experiments are designed and performed with Unity, thus all the evaluatio
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This repository basically consist of two parts. 
+This repository basically consist of three parts. 
 * The first part is a *folder* called *visu-tools*. This folder can be opened via Unity and contains the whole unity project in which the task got implemented. It serves as an example showcasing the tools. From here on this part will be referenced by *visu-tools project*.
 * The second part is a *.unitypackage* file called *visu-tools*. As the file ending suggest this file is a unity package and can be imported as such into a unity project. This package only contains the tools themselves, how they get incorporated into any given project is left to the user. As described above, *visu-tools project* serves as an example how one can incorporate them. From here on this part will be referenced by *visu-tools package*.
+* The third part is a *.exe* file called *visu-tools*. This file is the finished build of the *visu-tools project* and can be explored without the Unity editor and any knowledge about it. As it is bascially the same as the *visu-tools project* everything non Unity editor related that applies to *visu-tools project* also applies to this build. Thus it will not be mentioned individually from here on.
 
 ### Prerequisites
 Everything got implemented and tested using the Unity editor version *2021.3.12f1* and a simple 3D core project base using the *built-in render pipeline*. <br />
-XR support got tested using the Mock HMD Loader. Both render modes (multi pass, single pass instanced) were tested and functioning. <br />
+XR support got tested using the Mock HMD Loader. Both render modes (multi pass, single pass instanced) were tested and functioning. The GUI elements in *visu-tools project* might not work with XR, however, as *visu-tools project* only shows an example usage that is fine. <br />
 If anything does not work for you, be sure to check if your set-up is any different. Especially other render pipelines might have problems!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -93,15 +94,15 @@ If anything does not work for you, be sure to check if your set-up is any differ
 <!-- USAGE -->
 ## Usage
 
-The usage differs between just using the example *visu-tools project* or incorporating the *visu-tools package* into another project. The following describes both cases. It is assumed that you completed the <a href="#installation">installation</a> and are familiar with the Unity editor.
+The usage differs between just using the example *visu-tools project* or incorporating the *visu-tools package* into another project. The following describes both cases. It is assumed that you completed the <a href="#installation">installation</a> and are familiar with the Unity editor (or are simply using the finsihed build).
 
 ### Visu-tools project
-The project contains four different scenes: *Main Menu, Test World, Record World, Replay World*. <br />
+The project contains five different scenes: *Main Menu, Replay Menu, Test World, Record World, Replay World*. <br />
 Open up the *Main Menu* scene and enter play mode. Now you can navigate between the different scenes. 
 
 #### *Test World*
 Here you can use your keyboard (W,A,S,D) and mouse to navigate your character in first person mode through an example environment. <br />
-In order to spicy things up do the following:
+In order to spicy things up you can either explore the *Options* menu, which is accessed via the *OPTIONS* button on the top-left, or do the following:
 1. If you use play mode in full screen mode, don't.
 2. In the hierarchy go to *Player > Main Camera*.
 3. In the inspector go to *Control Shader (Script)*.
@@ -110,25 +111,28 @@ In order to spicy things up do the following:
 
 #### *Record World*
 Here you can use your keyboard (W,A,S,D) and mouse to navigate your character in first person mode through an example environment. <br />
-By pressing the *RECORD* button in the graphical interface you start recording your movement. By pressing the *STOP* button in the graphical interface you stop recording your movement. <br />
-Your movement information will be saved and can be replayed in the *Replay World* scene.
+By pressing the *START* button in the graphical interface you start recording your movement. By pressing the *STOP* button in the graphical interface you stop recording your movement. <br />
+From the moment you press *START* to the moment you press *STOP* your movement information will be saved and can be later replayed in the *Replay World* scene. <br />
+
+#### *Replay Menu*
+Here you can simply select which file should be replayed. Select the file you want, then press *REPLAY*.
 
 #### *Replay World*
 Here you cannot move on your own. <br />
-There are a few buttons you can use (some might only appear if certain other buttons got pressed, but it's pretty self explanatory):
+On the top right there are a few replay mangement buttons you can use (some might only appear if certain other buttons got pressed, but it's pretty self explanatory):
 * *PlAY*: Starts the replay of your previously recorded movement. 
 * *PAUSE*: Pauses the replay.
 * *RESUME*: Resumes the replay.
 * *STOP*: Stops the replay.
-While the replay is playing you can try using different visualization effects as described here: <a href="#test-world">test world</a>. Because of the replay function you do not have to switch between the in inspector and game view in order to try out the effects!
+While the replay is playing you can try using different visualization effects as described here: <a href="#test-world">test world</a>. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-/TODO: Bilder, gui back knöpfe, gui shader, gui file selection
+/TODO: Bilder ?
 
 
 ### Visu-tools package
-The package contains a view different folders filled with scripts, matrials and other information in order to make everything work. Feel free to go through it and, if necessary, modify it for your needs.
+The package contains a view different folders filled with scripts, materials and other information in order to make everything work. Feel free to go through it and, if necessary, modify it for your needs.
 
 #### *Visualization effects function*
 In the following the different parts contributing to the visualization effects function will be listed. 
