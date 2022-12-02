@@ -23,6 +23,8 @@ public class OptionsMenuControl : MonoBehaviour
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONTROL METHODS ---
 
+    #region Control methods
+
     public void Start()
     {
         controlShaderScript = cam.GetComponent<ControlShader>(); // getting acces to script that controls which effect is applied to camera
@@ -67,61 +69,44 @@ public class OptionsMenuControl : MonoBehaviour
         switch (controlShaderScript.shaderActive)
         {
             case ControlShader.ShaderActive.None:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("No additional settings available", -1, -1, -1, -1, true, false);
+                SetUpEmtpy();
                 break;
             case ControlShader.ShaderActive.RadialBlur:
             case ControlShader.ShaderActive.RadialBlurDesat:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
-                if (controlShaderScript.XrActive) // TODO: does this matter? Example not intended for XR?
-                {
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X Left Eye", 0, 1, 0.5f, controlShaderScript.radialBlurOriginXLeftEye, false);
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y Left Eye", 0, 1, 0.5f, controlShaderScript.radialBlurOriginYLeftEye, false);
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X Right Eye", 0, 1, 0.5f, controlShaderScript.radialBlurOriginXRightEye, false);
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y Right Eye", 0, 1, 0.5f, controlShaderScript.radialBlurOriginYRightEye, false);
-                }
-                else
-                {
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X", 0, 1, 0.5f, controlShaderScript.radialBlurOriginX, false);
-                    GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y", 0, 1, 0.5f, controlShaderScript.radialBlurOriginY, false);
-                }
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Radial", 0, 10, 5f,controlShaderScript.scaleRadial, false);
+                SetUpRadial();
                 break;
             case ControlShader.ShaderActive.GaussianBlur:
             case ControlShader.ShaderActive.Sharpening:
             case ControlShader.ShaderActive.HighPass:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
+                SetUpJustKernel();
                 break;
             case ControlShader.ShaderActive.MotionBlur:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Blur", 0, 10, 5f, controlShaderScript.scaleMotionBlur, false);
+                SetUpMotionBlur();
                 break;
             case ControlShader.ShaderActive.MotionField:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f,controlShaderScript.scaleMotionField, false);
+                SetUpJustMotionField();
                 break;
             case ControlShader.ShaderActive.HighPassOnMotionField:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f, controlShaderScript.scaleMotionField, false);
+                SetUpHighPassMotion();
                 break;
             case ControlShader.ShaderActive.MotionFieldOnHighPass:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f, controlShaderScript.scaleMotionField, false);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Threshold", 0, 0.25f, 0.0075f, controlShaderScript.threshold, false);
+                SetUpHighPassMotion();
+                SetUpThreshold();
                 break;
             case ControlShader.ShaderActive.Depth: //TODO: maybe check how colors could work
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("No additional settings available", -1, -1, -1, -1, true, false);
+                SetUpEmtpy();
                 break;
             case ControlShader.ShaderActive.HighPassOnDepth:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
+                SetUpJustKernel();
                 break;
             case ControlShader.ShaderActive.MotionFieldOnHighPassOnDepth:
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, controlShaderScript.kernelSize, true);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f, controlShaderScript.scaleMotionField, false);
-                GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Threshold", 0, 0.25f, 0.0075f, controlShaderScript.threshold, false);
+                SetUpHighPassMotion();
+                SetUpThreshold();
                 break;
         }
     }
 
-    /* Returns a new slider for the addtional settings*/
+    /* Returns a entry for the addtional settings*/
     private GameObject GetNewSettingObject()
     {
         return Instantiate(addOptSliderPrefab, scrollViewContent);
@@ -136,8 +121,13 @@ public class OptionsMenuControl : MonoBehaviour
         }
     }
 
+    #endregion
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- ON CLICK METHODS ---
+
+    #region On click
+
     /* Opens up option menu and stops time */
     public void OpenOptions()
     {
@@ -161,4 +151,84 @@ public class OptionsMenuControl : MonoBehaviour
         objectMenuUI.SetActive(false);
         optionsBtn.SetActive(true);
     }
+
+    #endregion
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- HELPER ---
+
+    #region Helper methods
+
+    /* Sets up additional setting for threshold that is used for motion on high pass effects */
+    private void SetUpThreshold()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Threshold", 0, 0.25f, 0.0075f, false);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.threshold = tmp.value; });  // adding listener that changes value if slider changes;
+    }
+
+    private void SetUpHighPassMotion()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, true);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.kernelSize = (int)tmp.value; });  // adding listener that changes value if slider changes;
+        Slider tmp2 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f, false);
+        tmp2.onValueChanged.AddListener(delegate { controlShaderScript.scaleMotionField = tmp2.value; });  // adding listener that changes value if slider changes;
+    }
+
+    /* Sets up additional setting for motion field scale*/
+    private void SetUpJustMotionField()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Field", 1, 10, 1f, false);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.scaleMotionField = tmp.value; });  // adding listener that changes value if slider changes;
+    }
+
+    /* Sets up motion blur additional settings */
+    private void SetUpMotionBlur()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, true);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.kernelSize = (int)tmp.value; });  // adding listener that changes value if slider changes;
+        Slider tmp2 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Motion Blur", 0, 10, 5f, false);
+        tmp2.onValueChanged.AddListener(delegate { controlShaderScript.scaleMotionBlur = tmp2.value; });  // adding listener that changes value if slider changes;
+    }
+
+    /* Sets up additional kernel setting */
+    private void SetUpJustKernel()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, true);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.kernelSize = (int)tmp.value; });  // adding listener that changes value if slider changes;
+    }
+
+    /* Sets up additional setting that there are no additional settings */
+    private void SetUpEmtpy()
+    {
+        GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("No additional settings available", -1, -1, -1, true, false);
+    }
+
+    /* Sets up additional settings for radial blur effects */
+    private void SetUpRadial()
+    {
+        Slider tmp = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Kernel size", 5, 127, 9, true);
+        tmp.onValueChanged.AddListener(delegate { controlShaderScript.kernelSize = (int)tmp.value; });  // adding listener that changes value if slider changes;
+        if (controlShaderScript.XrActive) // TODO: does this matter? Example not intended for XR?
+        {
+            Slider tmp2 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X Left Eye", 0, 1, 0.5f, false);
+            tmp2.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginXLeftEye = tmp2.value; });  // adding listener that changes value if slider changes;
+            Slider tmp3 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y Left Eye", 0, 1, 0.5f, false);
+            tmp3.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginYLeftEye = tmp3.value; });  // adding listener that changes value if slider changes;
+            Slider tmp4 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X Right Eye", 0, 1, 0.5f, false);
+            tmp4.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginXRightEye = tmp4.value; });  // adding listener that changes value if slider changes;
+            Slider tmp5 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y Right Eye", 0, 1, 0.5f, false);
+            tmp5.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginYRightEye = tmp5.value; });  // adding listener that changes value if slider changes;
+        }
+        else
+        {
+            Slider tmp6 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin X", 0, 1, 0.5f, false);
+            tmp6.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginX = tmp6.value; });  // adding listener that changes value if slider changes;
+            Slider tmp7 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Radial Blur Origin Y", 0, 1, 0.5f, false);
+            tmp7.onValueChanged.AddListener(delegate { controlShaderScript.radialBlurOriginY = tmp7.value; });  // adding listener that changes value if slider changes;
+        }
+        Slider tmp8 = GetNewSettingObject().GetComponent<AdditionalSettingsControl>().SetContent("Scale Radial", 0, 10, 5f, false);
+        tmp8.onValueChanged.AddListener(delegate { controlShaderScript.scaleRadial = tmp8.value; });  // adding listener that changes value if slider changes;
+    }
+
+    #endregion
 }

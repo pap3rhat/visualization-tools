@@ -13,16 +13,18 @@ public class AdditionalSettingsControl : MonoBehaviour
 
     [SerializeField] private Slider slider;
 
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     /* Sets up additional settings element
      * descriptionString: Name of the setting
      * minVal: minimal values setting can have
      * maxVal: maximal value setting can have
      * defaultVal: default value of setting
-     * toBeChnagedValue: value that should be changed by slider, normally value from ControlShader
      * wholeNumbers: Can only whole numbers be used on slider?
      * showSlider: Should the slider even be shown or is description enough? (Used from "No settings" setting)
+     * returns: the slider, so listenre can be added in other script that knows which values in controlshaderscipt should be changed
      */
-    public void SetContent(string descriptionString, float minVal, float maxVal, dynamic toBeChangedValue, float defaultVal, bool wholeNumbers, bool showSlider = true)
+    public Slider SetContent(string descriptionString, float minVal, float maxVal, float defaultVal, bool wholeNumbers, bool showSlider = true)
     {
         // setting gui text
         description.text = descriptionString;
@@ -36,7 +38,6 @@ public class AdditionalSettingsControl : MonoBehaviour
             slider.wholeNumbers = wholeNumbers;
             this.minVal.text = minVal.ToString();
             this.maxVal.text = maxVal.ToString();
-            // TODO: add slider listener
         }
         else // not showing slider if wanted 
         {
@@ -45,5 +46,6 @@ public class AdditionalSettingsControl : MonoBehaviour
             this.maxVal.enabled = false;
         }
 
+        return slider;
     }
 }
