@@ -138,17 +138,42 @@ The package contains a view different folders filled with scripts, materials and
 In the following the different parts contributing to the visualization effects function will be listed. 
 * *visu-tools > Editor > ControlShaderEditor* : Controls how the inspector for the ControlShader script looks. 
 * *visu-tools > materials* : Contains three different materials that all use a different shader. 
-* *visu-tools > Visualization Scripts* : Contains four different scripts. Three of them, *Depth, ImageFilter, MotionField*, are classes with the necessary methods to use/apply the corresponding shader. The fourth file, _ControlShader_, is "the heart". It is derived from mono-behaviour and delegates the task of rendering the image with the correct post-processing effect on it. 
+* *visu-tools > Scripts > Visualization Scripts* : Contains four different scripts. Three of them, *Depth, ImageFilter, MotionField*, are classes with the necessary methods to use/apply the corresponding shader. The fourth file, _ControlShader_, is "the heart". It is derived from mono-behaviour and delegates the task of rendering the image with the correct post-processing effect on it. 
 * *visu-tools > Shader* : Contains four files. Three of them are shader files and one of them is a shader include file. The shader files contain a shader with only one subshader, but multiple passes that use different fragment shaders.
 
-The only part important for the basic usage is the *ControlShader* script. (The other parts require at least some knowledge about applying full screen post-processing shaders in Unity. Refer to the Unity manual for information on that topic.) **The visualization effects function is now added to your project as follows:**
+The only part important for the **basic usage** is the *ControlShader* script. (The other parts require at least some knowledge about applying full screen post-processing shaders in Unity. Refer to the Unity manual for information on that topic.) **The visualization effects function is now added to your project as follows:**
 1. In the hierarchy click on the camera object to which you want apply the post-processing visualization effects.
 2. In the inspector go to *Add Component* and type *ControlShader*. Add the *ControlShader* C# script to your camera.
 3. In the inspector open up the *Set-up* part of the *ControlShader* script. The materials should already be moved in there (if not, please do so); the camera should be empty. In this empty camera field move your camera object (the same object where you added the script as a component, not a different one!).
 4. You're all set up! You can now control the applied effect using the *Shader Active* selection on the script in the inspector. Be sure to read the tool tips when it comes to the additional settings. If you want the user to be able to control the effects in the end themselves, you have to implement a gui for that.  
 
 #### *Replay function*
-/ TODO describe once necessary
+In the following the different parts contributing to the replay function will be listed.
+* *visu-tool > Scriptable Objects > Active File* : Scriptable object that holds information about the active file (i.e. the file that should be replayed). It stores the index of the file, the file name, as well as the positions and rotations for every frame (each stored in a list).
+* *visu-tools > Scriptable Objects > File List* : Scriptable object that holds a list of all availbale file-paths, as well as the active file name and number.
+* *visu-tools > Scripts > Replay Scripts*: Contains five different scripts. Two of which belong to the scriptable objects (*ActiveFile, FileList*). The other three are there to record, read and replay csv files. 
+
+For the **basic usage** the record, read and replay file have to be set up as follows. <br />
+
+*CSVRecorder*:
+1. Attach the *CSVRecorder* file to any GameObject in the scene where the movement recording (of for eaxpmle the player) should happen.
+2. In the inspector move the gameObject, whose movement should be recorded, inside the *Recorde* slot of the script.
+3. In the inspector you might write a _full_ path inside the *File Path* slot of the script. This is the path where the recorded csv files will get saved to. You can also leave this path empty. In that case the files will get saved to *Application.persistentDataPath*. 
+4. In order to start the recording, call the *StartRecording* method of the script from anywhere you want.
+5. In order to stop recording, call the *StopRecording* method of the script from anywhere you want.
+
+**Important addition**: This recorder only saves the movement within *FixedUpdate* and **not** within *Update*. So it does not save the position and rotation of *every* frame. However, this makes it frame-rate independent, which is very important for replaying it at the same speed as recording it!
+
+*CSVReader*:
+1. In another script (eg one that controls the gui) create an Instance of the *CSVReader* script. Provide the constructor with the *Active File* and *File List* scriptable objects in the folder *visu-tools > Scriptable Objects*. You might additionally provide the constructor with a file path from where the csv files should be read. If you don't, *Application.persistentDataPath* will be used as a default. In either case make sure only csv files containing movement information are saved at that location.
+2. In order to load all the csv files that exist in the given location, call *LoadAllFiles*. This method fills the *File List* paths list with all the paths of avilable csv files. As arguments this methods takes two boolean values. The first one (*setFirst*) determines whether the first found file will be set as the active file and the second one (*readFirst*) determines whether the information of the first file should be processed as well (and set in the *Active File* scriptable object). As a default both those values are true. Setting *readFirst* to true only makes sense if *setFirst* is set to true as well.
+3. In order to set a file as the active file, call *SetActiveFile*. This method requires the index of the file within the paths list in the *File List* scriptable object. It also requires a bool (*read*) that determines whether or not the information of this file should be processed and saved as well.
+4. In order to read the information contained in the file given by the *Active File* scriptable object, call *ReadActiveFile*. This method has no arguments. It reads in the position and rotation information and saves them to the corresponding lists of the *Active File* scriptable object. 
+
+**Important addition**: In order for the information of the active file to be processed correctly, the csv file **has to** have the following columns (that are also called that way!): *pos_x, pos_y, pos_z, quat_x, quat_y, quat_z, quat_w*. There meaning is self-explanatory.
+
+*CSVPlayer*:
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
