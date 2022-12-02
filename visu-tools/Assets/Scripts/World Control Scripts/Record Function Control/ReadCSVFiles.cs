@@ -20,6 +20,10 @@ public class ReadCSVFiles : MonoBehaviour
 
     private void Awake()
     {
+#if UNITY_EDITOR // refresh assets
+        UnityEditor.AssetDatabase.Refresh();
+#endif
+
         csvReader = new CSVReader(fileList, activeFile, "Log Files");
         csvReader.LoadAllFilesFromResources(true, false); // loading all files; for now: setting first one as active but not reading it
 
