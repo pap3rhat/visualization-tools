@@ -11,7 +11,7 @@ public class CSVRecorder : MonoBehaviour
     private string filename = "";
     private bool recording = false; // do not start with recording yet
 
-    private GameObject player;
+    [Tooltip("Move gameobject whos movement is to be recorded in here.")] [SerializeField] GameObject recorde;
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,14 +30,6 @@ public class CSVRecorder : MonoBehaviour
     /*  Method that sets up recording of csv file */
     public void StartRecording()
     {
-        player = GameObject.Find("Player"); // finding player in scene
-
-        if (player == null)
-        {
-            Debug.LogError("There needs to be a gameobject called 'Player' in the scene! Logging not on!", this);
-            return;
-        }
-
         filename = Application.dataPath + "/Resources/Log Files/logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
 
         // maing sure flaot numbers are stored with a "." as a comma
@@ -57,13 +49,13 @@ public class CSVRecorder : MonoBehaviour
     {
         TextWriter textWriter = new StreamWriter(filename, true); // open file with filename and add to it
         textWriter.WriteLine($"{Time.frameCount}," +
-            $"{player.transform.position.x}," +
-            $"{player.transform.position.y}," +
-            $"{player.transform.position.z}," +
-            $"{player.transform.rotation.x}," +
-            $"{player.transform.rotation.y}," +
-            $"{player.transform.rotation.z}," +
-            $"{player.transform.rotation.w}");
+            $"{recorde.transform.position.x}," +
+            $"{recorde.transform.position.y}," +
+            $"{recorde.transform.position.z}," +
+            $"{recorde.transform.rotation.x}," +
+            $"{recorde.transform.rotation.y}," +
+            $"{recorde.transform.rotation.z}," +
+            $"{recorde.transform.rotation.w}");
         textWriter.Close();
     }
 

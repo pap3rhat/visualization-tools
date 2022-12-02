@@ -22,10 +22,20 @@ public class RecordingControl : MonoBehaviour
         }
         else
         {
-            recorder.StopRecording();
-            buttonText.text = "DONE";
+            recorder.StopRecording(); // stop recording
+            // set back for next recording
+            buttonText.text = "START";
+            record = true;
         }
 
+    }
+
+    private void OnDestroy()
+    {
+        if (!record) // if scene ist left before recording stopped, stop recording
+        {
+            recorder.StopRecording();
+        }
     }
 
 }
