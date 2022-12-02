@@ -20,14 +20,10 @@ public class ReadCSVFiles : MonoBehaviour
 
     private void Awake()
     {
-#if UNITY_EDITOR // refresh assets
-        UnityEditor.AssetDatabase.Refresh();
-#endif
+        csvReader = new CSVReader(fileList, activeFile);
+        csvReader.LoadAllFiles(true, false); // loading all files; for now: setting first one as active but not reading it
 
-        csvReader = new CSVReader(fileList, activeFile, "Log Files");
-        csvReader.LoadAllFilesFromResources(true, false); // loading all files; for now: setting first one as active but not reading it
-
-        if (fileList.files.Count() == 0)
+        if (fileList.paths.Count() == 0)
         {
             replayButton.GetComponent<Button>().interactable = false; // disabling button if there are no files
             GetComponent<PopulateReplayList>().SetNoFilesButton(); // setting "error" message

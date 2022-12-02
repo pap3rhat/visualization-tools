@@ -11,7 +11,8 @@ public class CSVRecorder : MonoBehaviour
     private string filename = "";
     private bool recording = false; // do not start with recording yet
 
-    [Tooltip("Move gameobject whos movement is to be recorded in here.")] [SerializeField] GameObject recorde;
+    [Tooltip("Move gameobject whos movement is to be recorded in here.")] [SerializeField] private GameObject recorde;
+    [Tooltip("Where should the files be saved? If empty 'Application.persistentDataPath' is used")] [SerializeField] private string filePath;
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,7 +31,15 @@ public class CSVRecorder : MonoBehaviour
     /*  Method that sets up recording of csv file */
     public void StartRecording()
     {
-        filename = Application.dataPath + "/Resources/Log Files/logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
+        if (filePath != null && !filePath.Equals(""))
+        {
+            filename = filePath + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
+        }
+        else
+        {
+            filename = Application.persistentDataPath + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
+        }
+
 
         // maing sure flaot numbers are stored with a "." as a comma
         System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();

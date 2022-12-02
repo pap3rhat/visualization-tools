@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -18,50 +18,46 @@ public class CSVReader
     private FileList fileList; // scriptable object containing a list of all available csv files
     private ActiveFile activeFile; // scriptable object containing information from a specific specific file
 
-    private string subfolderPath; // path after Resources/ where CSV files are locted; if emtpy files are just in Resources
+    private String filePath;
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
 
-    // construct with default subfolder "Log Files"
+    /* Constructs a reader that reads from Application.persistentDataPath */
     public CSVReader(FileList fileList, ActiveFile activeFile)
     {
         this.fileList = fileList;
         this.activeFile = activeFile;
-        this.subfolderPath = "Log Files";
+        this.filePath = Application.persistentDataPath;
     }
 
-    // construct with specific subfolder -> files are in Resources/subfolderPath
-    public CSVReader(FileList fileList, ActiveFile activeFile, string subfolderPath)
+    /* Constructs a reader that reads from specific location */
+    public CSVReader(FileList fileList, ActiveFile activeFile, string filePath)
     {
         this.fileList = fileList;
         this.activeFile = activeFile;
-        this.subfolderPath = subfolderPath;
+        this.filePath = filePath;
     }
-
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- METHODS TO BE CALLED FROM OTHER PLACES ---
 
-    /* Method that loads all CSV files from Resources/subfolderPath
+    /* Method that loads all CSV files from Application.persistentDataPath
      * setFirst: controls if first CSV file in folder should be set as active file; default: true
      * readFirst: controls if information from first file in folder should be read (only makes sense if setFirst is true); default: true
      * For readFirst it makes sense to set it to false if for example user gets shown a list of all available files first before deciding for one -> less information has to be processed in that case
      */
-    public void LoadAllFilesFromResources(bool setFirst = true, bool readFirst = true)
+    public void LoadAllFiles(bool setFirst = true, bool readFirst = true)
     {
-        // loading all CSV files as textAssets
-        if (subfolderPath != null)
+        // loading all CSV files paths
+        var filenames = Directory.GetFiles(filePath, "*.csv");
+        foreach (var file in filenames)
         {
-            fileList.files = Resources.LoadAll<TextAsset>(subfolderPath).ToList();
-        }
-        else
-        {
-            fileList.files = Resources.LoadAll("", typeof(TextAsset)).Cast<TextAsset>().ToList();
+            fileList.paths.Add(file);
         }
 
         // setting up activeFile if wanted
-        if (setFirst && fileList.files.Count > 0)
+        if (setFirst && fileList.paths.Count > 0)
         {
             SetActiveFile(0, readFirst);
         }
@@ -74,7 +70,7 @@ public class CSVReader
     public void SetActiveFile(int index, bool read)
     {
         // init activeFile
-        activeFile.fileName = fileList.files[index].name;
+        activeFile.fileName = Path.GetFileName(fileList.paths[index]);
         activeFile.fileNumber = index;
 
         // read in file of wanted
@@ -90,7 +86,7 @@ public class CSVReader
     public void ReadActiveFile()
     {
         // reading all rows from current file
-        string file = fileList.files[activeFile.fileNumber].text;
+        string file = File.ReadAllText(fileList.paths[activeFile.fileNumber]);
         string[] rows = file.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries); // reading all rows and removing emtpy rows
 
         // reading header and checking in which columns 'key attributes' are located

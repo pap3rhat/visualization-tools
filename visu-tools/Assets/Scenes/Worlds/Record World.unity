@@ -170,6 +170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recorde: {fileID: 1285393930}
+  filePath: 
 --- !u!114 &93333066
 MonoBehaviour:
   m_ObjectHideFlags: 0
