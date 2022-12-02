@@ -128,13 +128,11 @@ public class OptionsMenuControl : MonoBehaviour
 
     #region On click
 
-    /* Opens up option menu and stops time */
+    /* Opens up option menu and stops time
+     * Note: Movement stays enabled! 
+     */
     public void OpenOptions()
     {
-        Time.timeScale = 0f; // stopping time
-        // disabeling movement
-        player.GetComponent<PlayerMovement>().enabled = false;
-        cam.GetComponent<MouseLook>().enabled = false;
         // adjusting interface
         objectMenuUI.SetActive(true);
         optionsBtn.SetActive(false);
@@ -143,10 +141,6 @@ public class OptionsMenuControl : MonoBehaviour
     /* Closes options menu and continues time */
     public void CloseOptions()
     {
-        Time.timeScale = 1f; // continuing time
-        // disabeling movement
-        player.GetComponent<PlayerMovement>().enabled = true;
-        cam.GetComponent<MouseLook>().enabled = true;
         // adjusting interface
         objectMenuUI.SetActive(false);
         optionsBtn.SetActive(true);

@@ -39,6 +39,7 @@ public class CSVPlayer : MonoBehaviour
     public void StopReplay()
     {
         start = false;
+        pause = false;
         frameIdx = 0;
     }
 
@@ -48,7 +49,7 @@ public class CSVPlayer : MonoBehaviour
      */
     public bool CheckRunning()
     {
-        return start && frameIdx < activeFile.positions.Count - 1 && !pause;
+        return start && frameIdx < activeFile.positions.Count - 1;
     }
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

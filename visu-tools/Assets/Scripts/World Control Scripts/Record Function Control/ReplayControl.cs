@@ -13,6 +13,9 @@ public class ReplayControl : MonoBehaviour
     private TMP_Text playPauseButtonText;
     private Button stopButton;
 
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- MONO-BEHAVIOUR METHODS  ---
+
     private void Awake()
     {
         csvPlayer = GameObject.Find("Player").GetComponent<CSVPlayer>(); // getting csvScript reference of of player gameObject
@@ -21,6 +24,18 @@ public class ReplayControl : MonoBehaviour
         stopButton.gameObject.SetActive(false);
     }
 
+    private void Update()
+    {
+        if (!csvPlayer.CheckRunning()) // if play is done,act like stop got pressed
+        {
+            StopButtonCLicked();
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- ON CLICK METHODS ---
+
+    /* Play/Pause button got clicked */
     public void PlayPauseButtonClicked()
     {
         if (!playing) // will be executed if replay was not started yet (or after it was started again after stopping it)
@@ -47,6 +62,7 @@ public class ReplayControl : MonoBehaviour
         }
     }
 
+    /* Stop button got clicked */
     public void StopButtonCLicked()
     {
         playing = false;
