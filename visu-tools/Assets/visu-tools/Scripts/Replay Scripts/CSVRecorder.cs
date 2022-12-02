@@ -2,7 +2,7 @@ using UnityEngine;
 using System.IO;
 using System;
 
-/* Script that records positions and rotations of GameObject called player.
+/* Script that records positions and rotations of GameObject called recorde.
  * Can be used if no other way of generating log-files exists in programm.
  * WARNING: Your csv files have to be recorded within fixedUpdate!
  */
