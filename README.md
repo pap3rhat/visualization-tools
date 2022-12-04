@@ -30,7 +30,12 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li>     <a href="#visu-tools-package">Visu-tools package</a> </li>
 </ul>
 </li>
-<li><a href="#technical-background">Technical background</a></li>
+<li><a href="#technical-background">Technical background</a>
+<ul>
+<li><a href="#interlude">Interlude</a></li>
+<li><a href="#linear-filters">Linear filters</a></li>
+</ul>
+</li>
 <li><a href="#license">License</a></li>
 <li><a href="#acknowledgments">Acknowledgments</a></li>
 </ol>
@@ -145,7 +150,7 @@ The only part important for the **basic usage** is the *ControlShader* script. (
 1. In the hierarchy click on the camera object to which you want apply the post-processing visualization effects.
 2. In the inspector go to *Add Component* and type *ControlShader*. Add the *ControlShader* C# script to your camera.
 3. In the inspector open up the *Set-up* part of the *ControlShader* script. The materials should already be moved in there (if not, please do so); the camera should be empty. In this empty camera field move your camera object (the same object where you added the script as a component).
-4. You're all set up! You can now control the applied effect using the *Shader Active* selection on the script in the inspector. Be sure to read the tool tips when it comes to the additional settings. If you want the user to be able to control the effects themselves in the end, you have to implement a GUI for that.  
+4. You're all set up! You can now control the applied effect using the *Shader Active* selection on the script in the inspector. Be sure to read the tool tips when it comes to the additional settings and check out the <a href="#technical-background">technical background</a> section. If you want the user to be able to control the effects themselves in the end, you have to implement a GUI for that.  
 
 #### *Replay function*
 In the following the different parts contributing to the replay function will be listed.
@@ -190,6 +195,32 @@ For the **basic usage** the record, read and replay file have to be used as foll
 
 <!-- TECHNICAL BACKGROUND -->
 ## Technical background
+
+This section tries to (at least partially) explain how the different visualization tools work in theory. It will also cover some of the implementation details and things to be aware of when using the *visu-tool package* in your own project.
+
+### Interlude
+Before thinking about how an *individual* visualization tool works, one has to think about how they work *in general*. As explained here <a href="#about-the-project">About The Project</a>, the purpose of the visualization tools is to extract some kind of "meta data" from what a participant perceives during a VR-navigation-experiment. Broadly speaking, what they perceive is a rapid sequence of frames, where each frame itself can be interpreted as an image. This image shows part of the virtual world as seen through the virtual eyes/virtual camera of the participant. As the participant moves those eyes/this camera the image will change as it shows a different part of the virtual world. Because the changing of frames is happening at a very high speed (for example 400 frames per second) the participant cannot distinguish between the different frames and instead perceives it as a continuous stream of information that simulates movement. <br />
+In order to now visualize the "meta data" in this stream, one starts by simply saving the movement information (position + rotation at a frame x) of the participant and replaying it with the same frame-rate as the participant experienced. This replay is what will now be manipulated. More precisely, each frame will be seen as an image on which an image-processing effect will be applied before it gets shown. In Unity this is done by using post-processing shaders that effect the final render image output of the camera by changing every pixels color within a fragment shader. <br />
+So, essentially, one has to understand what an image is in this context and how it can be manipulated.
+
+#### *What is an image*
+In this context an image is one single frame that is contained within a $M \times N  \times 3$ dimensional matrix where $M$ is the height of the frame and $N$ is the width of the frame. The $3$ represents the three different RGB-color channels which contain a value form 0 to 255 (or 0 to 1 in Unity; keyword: normalization). So, for example, the value at $(j,k,0) \in M \times N \times 3$ represents the red color value of the pixel at height $j$ and width $k$. <br />
+Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This is simply done by using  matrix operations (eg. matrix multiplication).
+
+/TODO hier wahrschienlich au frequenzen erwähnen, damit des unten mehr Sinn ergibt
+
+### Linear filters
+Linear filters are image prcoessing effects in which the final value of a pixel is a linear combination of the value of the pixel itself and of the values of the pixels in its neighborhood. 
+/TODO convolution erklärung hier hin packen?
+
+#### *Gaussian blur*
+A gaussian blur is a way of applying a low-pass filter to an image. A low-pass filter "smoothes" the image by keeping its low frequencies and discarding its high frequencies. Depending on how low/high a frequency needs to be in order to count as a low/high frequency, the image will appear more or less smooth/blurry; The more is discarded, the blurry the image will appear. <br />
+This "discarding/keeping decision" can be done by doing a *convolution* on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a *kernel*.
+Here the kernel is a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...); The bigger the kernel the bigger the nighborhood $W$. 
+
+For the 
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
