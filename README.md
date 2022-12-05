@@ -33,7 +33,10 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#technical-background">Technical background</a>
 <ul>
 <li><a href="#interlude">Interlude</a></li>
-<li><a href="#linear-filters">Linear filters</a></li>
+<li><a href="#linear-filters">Linear filters</a>
+<ul>
+<li><a href="#gaussian-blur">Gaussian blur</a></li>
+</ul></li>
 </ul>
 </li>
 <li><a href="#license">License</a></li>
@@ -205,20 +208,98 @@ So, essentially, one has to understand what an image is in this context and how 
 
 #### *What is an image*
 In this context an image is one single frame that is contained within a $M \times N  \times 3$ dimensional matrix where $M$ is the height of the frame and $N$ is the width of the frame. The $3$ represents the three different RGB-color channels which contain a value form 0 to 255 (or 0 to 1 in Unity; keyword: normalization). So, for example, the value at $(j,k,0) \in M \times N \times 3$ represents the red color value of the pixel at height $j$ and width $k$. <br />
-Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This is simply done by using  matrix operations (eg. matrix multiplication).
+Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This is simply done by using  matrix operations, one very important matrix operation in this case is *convolution* (more on that later).
 
 /TODO hier wahrschienlich au frequenzen erwähnen, damit des unten mehr Sinn ergibt
+/TODO Fourier??????????
 
 ### Linear filters
-Linear filters are image prcoessing effects in which the final value of a pixel is a linear combination of the value of the pixel itself and of the values of the pixels in its neighborhood. 
-/TODO convolution erklärung hier hin packen?
+Linear filters are image pre-processing effects in which the final value of a pixel is given by a linear combination of the value of the pixel itself and of the values of the pixels in its neighborhood $W$. <br />
+This calculation is realized by *convolution*. During convolution a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...), a so called *kernel*, is  slid over the image matrix. Every entry of this kernel represents a weight *w_i* with which the value of the image pixel underneath the kernel gets multiplied. After every image pixel value underneath the kernel got multiplied with the corresponding weight, those values get summed up. This sum is now the final value of the image pixel that is positioned underneath the kernels middle. <br />
+When dealing with colored images, this process is separately done for every color channel. So the final red/green/blue value of every pixel is determined independently of the other two colors. 
+
+/TODO Bild für conv erklärung einfügen?
+
 
 #### *Gaussian blur*
-A gaussian blur is a way of applying a low-pass filter to an image. A low-pass filter "smoothes" the image by keeping its low frequencies and discarding its high frequencies. Depending on how low/high a frequency needs to be in order to count as a low/high frequency, the image will appear more or less smooth/blurry; The more is discarded, the blurry the image will appear. <br />
-This "discarding/keeping decision" can be done by doing a *convolution* on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a *kernel*.
-Here the kernel is a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...); The bigger the kernel the bigger the nighborhood $W$. 
+A Gaussian blur is a way of applying a low-pass filter to an image. A low-pass filter "smoothes" the image by keeping its low frequencies and discarding its high frequencies. Depending on how low/high a frequency needs to be in order to count as a low/high frequency, the image will appear more or less smooth/blurry; The more is discarded, the blurry the image will appear. <br />
+This "discarding/keeping decision" can be done by doing a convolution on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a kernel. The bigger the kernel the bigger the neighborhood $W$. 
 
-For the 
+The important part now is how the kernel weights $w_i$ are designed. Getting rid of high frequencies can be seen as decreasing the disparity between the different pixel values; this can simply be realized by averaging over them. So a $3 \times 3$ kernel would look like this:
+```math
+\frac{1}{9} \cdot \begin{bmatrix}
+	1 & 1 & 1 \\
+	1 & 1 & 1 \\
+	1 & 1 & 1 
+\end{bmatrix} 
+```
+So $w_i=\frac{1}{9} \\ \forall i\in\[0..8\]$. <br />
+As the size of such an averaging kernel increases, the neighborhood $W$ increases and the individual kernel weights decrease. So more pixels are involved in the averging step which makes the color transition smoother; hence the image appears more blurry. <br />
+However, using such an averaging kernel lets the final image appear a bit "boxy"; hence why a low-pass filter that is implemented in such a fashion is referred to as *Box blur*.
+
+/TODO evtl doch Fourier ansprechen, damit box mittels transformation in frquenzbereich erklärt werden kann? Zu komplex?
+
+In order to have less of a "boxy" look to the final image, the above kernel can slightly be adjusted. Instead of giving each pixel in $W$ the same weight, the weight will be dependent on the distance of each pixel $(j,k) \in W$ to the middle pixel in $W$. The further away a pixel, the smaller its weight. So a $3 \times 3$ kernel might look like this:
+```math
+\frac{1}{16} \cdot \begin{bmatrix}
+	1 & 2 & 1 \\
+	2 & 4 & 2 \\
+	1 & 2 & 1 
+\end{bmatrix} 
+```
+More elaborate the weights $w_i$ are given by the product of two discrete Gaussian functions (hence Gaussian blur), one per image dimension:
+```math
+G(x,y) = \frac{1}{2 \pi \sigma ^2} \exp ^{-\frac{x^2 + y^2}{2 \sigma ^2}}
+```
+Here $x$ is the distance of the currently looked at pixel from the center pixel on the horizontal axis, $y$ is this distance on the vertical axis and $\sigma$ is the standard deviation of the Gaussian distribution. <br />
+
+/TODO vllt mehr erklären warum Einfach produkt (seperierbarkeit!)
+
+This can further be simplified, because the discrete Gaussian function can be approximated by the binomial distribution. So in order to get the correct kernel weights it is enough to simply look at the Pascals triangle. <br />
+Each row in Pascals triangle can be interpreted as a one-dimensional kernel that weights the pixels closer to the center more that those farther away. For example the second row (counting starts at $0$!) would yield the following kernel
+```math
+\begin{bmatrix}
+	1 & 2 & 1 
+\end{bmatrix} 
+```
+Normalizing these values yields
+```math
+\frac{1}{4} \cdot  \begin{bmatrix}
+	1 & 2 & 1 
+\end{bmatrix} 
+```
+So, in general, a one-dimensional Gaussian kernel can be obtained through 
+```math
+\frac{1}{2^n} \cdot  \begin{bmatrix}
+	PascalRow(n,0) & PascalRow(n,1) & ... & PascalRow(n,n) 
+\end{bmatrix} 
+```
+where $PascalRow(n,x)$ refers to the $x$-th value of the $n$-th row in Pascals triangle (counting starts at $0$ for both $x$ and $n$). <br />
+In order to get a two-dimensional kernel, the kernel simply gets multiplied by its transpose; this works due to the separability of the two-dimensional Gaussian function. In the case of a $3 \times 3$ kernel that yields
+```math
+\frac{1}{4}  \cdot  \begin{bmatrix}
+	1 & 2 & 1 
+\end{bmatrix} \cdot \frac{1}{4}  \cdot  \begin{bmatrix}
+	1 \\ 2 \\ 1 
+\end{bmatrix}  = \frac{1}{16} \cdot \begin{bmatrix}
+	1 & 2 & 1 \\
+	2 & 4 & 2 \\
+	1 & 2 & 1 
+\end{bmatrix} 
+
+```
+which is exactly the kernel from above!
+
+/TODO Bild, dass vergleich zeigt? 
+
+#####  *Implementation remarks*
+1. For efficiency reasons the separability of the kernel is being used. In the first shader pass a horizontal Gaussian blur is applied to the image, this gets saved as an intermediate result. On this intermediate result a vertical Gaussian blur is applied, resulting in a final output-image that is blurred horizontally and vertically.
+2. For efficiency reasons the kernel weights are determined a little differently than described above. For example if the kernel is supposed to have dimensions $5 \times 5$, the $9$-th row of the Pascal triangle is being picked instead of the $5$-th row. Then the two most left and the two most rights values of this row are discarded, leaving the middle $5$ values of the $9$-th row. The reasoning behind this is that otherwise the outermost weights are quite small, so the pixel values underneath them do not contribute a lot to the final result; however, you still have to look up the image pixel value for each of them, which is the costly operation. So designing the kernel with a "higher" row and discarding values leads to bigger weights and thus more blur effect with comparably less pixel value look-up operations. <br />
+Additionally Linear sampling is being used in order to reduce the look-up operations. 
+
+/TODO maybe Linear sampling erklären
+
+3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the blur effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values effect changes.
 
 
 
