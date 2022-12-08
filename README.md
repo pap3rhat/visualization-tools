@@ -36,6 +36,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#linear-filters">Linear filters</a>
 <ul>
 <li><a href="#gaussian-blur">Gaussian blur</a></li>
+<li><a href="#high-pass-filter">High-pass filter</a></li>
 </ul></li>
 </ul>
 </li>
@@ -223,7 +224,7 @@ When dealing with colored images, this process is separately done for every colo
 
 #### *Gaussian blur*
 A Gaussian blur is a way of applying a low-pass filter to an image. A low-pass filter "smoothes" the image by keeping its low frequencies and discarding its high frequencies. Depending on how low/high a frequency needs to be in order to count as a low/high frequency, the image will appear more or less smooth/blurry; The more is discarded, the blurry the image will appear. <br />
-This "discarding/keeping decision" can be done by doing a convolution on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a kernel. The bigger the kernel the bigger the neighborhood $W$. 
+This "discarding/keeping decision" can be realized by doing a convolution on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a kernel. The bigger the kernel the bigger the neighborhood $W$. 
 
 The important part now is how the kernel weights $w_i$ are designed. Getting rid of high frequencies can be seen as decreasing the disparity between the different pixel values; this can simply be realized by averaging over them. So a $3 \times 3$ kernel would look like this:
 ```math
@@ -247,7 +248,7 @@ In order to have less of a "boxy" look to the final image, the above kernel can 
 	1 & 2 & 1 
 \end{bmatrix} 
 ```
-More elaborate the weights $w_i$ are given by the product of two discrete Gaussian functions (hence Gaussian blur), one per image dimension:
+More elaborately, the weights $w_i$ are given by the product of two discrete Gaussian functions (hence Gaussian blur), one per image dimension:
 ```math
 G(x,y) = \frac{1}{2 \pi \sigma ^2} \exp ^{-\frac{x^2 + y^2}{2 \sigma ^2}}
 ```
@@ -255,7 +256,7 @@ Here $x$ is the distance of the currently looked at pixel from the center pixel 
 
 /TODO vllt mehr erklären warum Einfach produkt (seperierbarkeit!)
 
-This can further be simplified, because the discrete Gaussian function can be approximated by the binomial distribution. So in order to get the correct kernel weights it is enough to simply look at the Pascals triangle. <br />
+This can further be simplified, because the discrete Gaussian function can be approximated by the binomial distribution. So in order to get the correct kernel weights it is enough to simply look at Pascals triangle. <br />
 Each row in Pascals triangle can be interpreted as a one-dimensional kernel that weights the pixels closer to the center more that those farther away. For example the second row (counting starts at $0$!) would yield the following kernel
 ```math
 \begin{bmatrix}
@@ -275,7 +276,7 @@ So, in general, a one-dimensional Gaussian kernel can be obtained through
 \end{bmatrix} 
 ```
 where $PascalRow(n,x)$ refers to the $x$-th value of the $n$-th row in Pascals triangle (counting starts at $0$ for both $x$ and $n$). <br />
-In order to get a two-dimensional kernel, the kernel simply gets multiplied by its transpose; this works due to the separability of the two-dimensional Gaussian function. In the case of a $3 \times 3$ kernel that yields
+In order to get a two-dimensional kernel, the kernel simply gets multiplied with its transpose; this works due to the separability of the two-dimensional Gaussian function. In the case of a $3 \times 3$ kernel that yields
 ```math
 \frac{1}{4}  \cdot  \begin{bmatrix}
 	1 & 2 & 1 
@@ -299,8 +300,51 @@ Additionally Linear sampling is being used in order to reduce the look-up operat
 
 /TODO maybe Linear sampling erklären
 
-3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the blur effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values effect changes.
+3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the blur effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
 
+
+#### *High-pass filter*
+A high-pass filter is basically the inverse of a low-pass filter. Instead of keeping the images low frequencies and discarding its high frequencies, a high-pass filter discards the images low frequencies and keeps its high frequencies.  This strengthens the disparity between the pixel values and erases area information. Same as for the low-pass filter: The more is discarded, the stronger this effect. <br />
+This "discarding/keeping decision" can again be realized by doing a convolution on each RGB-channel of the image. 
+
+The kernel weights $w_i$ are chosen quite simply. As the high-pass filter is the inverse operation of the low-pass filter, the kernels for the low-pass filter can just be inverted. <br />
+For the $3 \times 3$ Box blur kernel this yields
+```math
+\begin{bmatrix}
+	0 & 0 & 0 \\
+	0 & 1 & 0 \\
+	0 & 0 & 0 
+\end{bmatrix} - \frac{1}{9} \cdot \begin{bmatrix}
+	1 & 1 & 1 \\
+	1 & 1 & 1 \\
+	1 & 1 & 1 
+\end{bmatrix}  = \frac{1}{9} \cdot  \begin{bmatrix}
+	-1 & -1 & -1 \\
+	-1 & 8 & -1 \\
+	-1 & -1 & -1 
+\end{bmatrix} 
+```
+For the $3 \times 3$ Gaussian blur kernel this yields
+```math
+\begin{bmatrix}
+	0 & 0 & 0 \\
+	0 & 1 & 0 \\
+	0 & 0 & 0 
+\end{bmatrix} - \frac{1}{16} \cdot \begin{bmatrix}
+	1 & 2 & 1 \\
+	2 & 4 & 2 \\
+	1 & 2 & 1 
+\end{bmatrix} 
+= \frac{1}{16} \cdot  \begin{bmatrix}
+	-1 & -2 & -1 \\
+	-2 & 12 & -2 \\
+	-1 & -2 & -1 
+\end{bmatrix} 
+```
+
+#####  *Implementation remarks*
+1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
+3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
