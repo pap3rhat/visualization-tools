@@ -5,12 +5,12 @@ Shader "Optical/ImageFilter"
 		_MainTex("Texture", 2D) = "white" {}
 	}
 
-		CGINCLUDE
-#include "UnityCG.cginc"
-#include "Assets/visu-tools/Shader/ColorMethods.cginc"
+	CGINCLUDE
+	#include "UnityCG.cginc"
+	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
 
-		// appdata to vertex shader
-		struct a2v
+	// appdata to vertex shader
+	struct a2v
 	{
 		float4 pos : POSITION; // position of vertex in world coordinates (WORLD POSITION)
 		float2 uv : TEXCOORD0; // uv coordinate
