@@ -27,7 +27,12 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <a href="#usage">Usage</a>
 <ul> <li>
 <a href="#visu-tools-project">Visu-tools project</a> </li>
-<li>     <a href="#visu-tools-package">Visu-tools package</a> </li>
+<li>     <a href="#visu-tools-package">Visu-tools package</a> 
+<ul>
+<li><a href="#visualization-effects-function">Visualization effects function</a></li>
+<li><a href="#replay-function">Replay function</a></li>
+<li><a href="#texture-grab-function">Texture grab function</a></li>
+</ul></li>
 </ul>
 </li>
 <li><a href="#technical-background">Technical background</a>
@@ -54,7 +59,8 @@ This repository contains the code for my bachelors thesis at University of Biele
 The topic is: *"Entwicklung von Visualisierungswerkzeugen zur Auswertung von VR-Navigationsexperimenten beim Menschen"*(Development of visualization tools that can be used to evaluate vr-navigation-experiments performed by humans).
 
 More precisely the task was to find ways of visualizing "meta-data" that humans might use when navigating through a VR-world. This "meta-data" includes things such as how the environment moves in respect to oneself or how sharp/blurry one perceives parts of the environment. <br />
-The task also included creating a system to replay .CSV files that contain movement (position + orientation) data. In order to always have access to such files this project also contains recorder.
+The task also included creating a system to replay .CSV files that contain movement (position + orientation) data. In order to always have access to such files this project also contains recorder. <br />
+Furthermore this project contains a function to save the motion vectors texture and the depth texture as images (.png). This is useful for analyzing the individual vectors for every frame.
 
 *Why is it relevant to be able to have such tools?*
 \TODO
@@ -77,7 +83,7 @@ This repository basically consist of three parts.
 
 ### Prerequisites
 Everything got implemented and tested using the Unity editor version *2021.3.12f1* and a simple 3D core project base using the *built-in render pipeline*. <br />
-XR support got tested using the Mock HMD Loader. Both render modes (multi pass, single pass instanced) were tested and functioning. The GUI elements in *visu-tools project* might not work with XR, however, as *visu-tools project* only shows an example usage, that is fine. <br />
+XR support got tested using the Mock HMD Loader inside the Editor(!). Both render modes (multi pass, single pass instanced) were tested and functioning. The GUI elements in *visu-tools project* might not work with XR, however, as *visu-tools project* only shows an example usage, that is fine. <br />
 If anything does not work for you, be sure to check if your set-up is any different. Especially other render pipelines might have problems!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -192,7 +198,26 @@ For the **basic usage** the record, read and replay file have to be used as foll
 
 **Important addition**: This player updates the position and orientation of the GameObject within *FixedUpdate* and **not** within *Update*. So it does not change the position and rotation in *every* frame. However, this makes it frame-rate independent, which is very important for replaying it at the same speed as recording it! (The difference in 'missing frames' cannot be perceived). So if you are using your own files, that are not created using *CSVRecorder*, make sure that you record the movement within *FixedUpdate*!
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+#### *Texture grab function*
+In the following the different parts contributing to the replay function will be listed.
+* *visu-tools > materials > Texture Grab Materials* : Contains one material that uses the Texture Grab shader.
+* *visu-tools > Scripts > Texture Grab Scripts*: Contains one script called *TextureGrabber* that can save the motion vector texture as well as the depth texture to a png file.
+* *visu-tools > Shader > Visualization Shader* : Contains one shader file. That shader has one subshader and two passes. One pass returns the motion vector texture, the other pass returns the depth texture.
+
+For the **basic usage** the *TextureGrabber* file has to be used as follows. <br />
+
+1. In the hierarchy click on the camera object from which you want the textures.
+2. In the inspector go to *Add Component* and type *TextureGrabber*. Add the *TextureGRabber* C# script to your camera.
+3. In the inspector part for the script the material should already be moved in there (if not, please do so); the camera should be empty. In this empty camera field move your camera object (the same object where you added the script as a component).
+4. You're all set up! You can now control which texture gets saved as an image (.png) by (un-)checking the corresponding box in the inspector part for the script.
+
+**Important additions**: 
+* The images get saved to *Application.persistentDataPath/DepthGrab* and *Application.persistentDataPath/MotionGrab* if no path is provided in the *File Path* slot in the inspector. Otherwise the get saved to *File Path/DepthGrab* and *File Path/MotionGrab*.
+* For images the show the depth texture the nameing convention is as follows: *depth_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. For images the show the motion vectors texture the naming convention is as follows: *motion_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. <br /> In the case the xr is not active *cam.stereoActiveEye.ToString().ToLower()* resolves to *mono*. In the case that xr is active and multi pass is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left* or *right*; so two images are saved for very frame (one for each eye). In the case that xr is active and single pass instanced is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left*; so only the image for the left eye is saved for every frame (because single pass instanced rendering is weird...).
+* In the motion vectors images the red channel contains the movement in x-direction and the green channel contains the movement in the y-direction. The values can range from $-1$ to $1$. Both values have been divided by *Time.delta_Time*, so they are not nearly $0$; for reconstructing purposes of the original values *Time.delta_Time* is contained in the file name.
+* In the depth texture images each color channel contains the same value. The values can range from $0$ to $1$ and are distributed linearly. $0$ represents the near plane, $1$ the far plane.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
