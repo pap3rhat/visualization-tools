@@ -19,6 +19,7 @@ public class CSVReader
     private ActiveFile activeFile; // scriptable object containing information from a specific specific file
 
     private String filePath;
+    private const string SAVE_SUBFOLDER_LOG = "LogFiles";
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- CONSTRUCTOR ---
@@ -28,7 +29,7 @@ public class CSVReader
     {
         this.fileList = fileList;
         this.activeFile = activeFile;
-        this.filePath = Application.persistentDataPath;
+        this.filePath = Application.persistentDataPath + Path.DirectorySeparatorChar + SAVE_SUBFOLDER_LOG;
     }
 
     /* Constructs a reader that reads from specific location */

@@ -14,6 +14,8 @@ public class CSVRecorder : MonoBehaviour
     [Tooltip("Move gameobject whos movement is to be recorded in here.")] [SerializeField] private GameObject recorde;
     [Tooltip("Where should the files be saved? If empty 'Application.persistentDataPath' is used")] [SerializeField] private string filePath;
 
+    private const string SAVE_SUBFOLDER_LOG = "LogFiles";
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /* Method that is being called every fixed frame-rate frame */
@@ -33,11 +35,21 @@ public class CSVRecorder : MonoBehaviour
     {
         if (filePath != null && !filePath.Equals(""))
         {
-            filename = filePath + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
+            if (!Directory.Exists(Path.Combine(filePath, SAVE_SUBFOLDER_LOG)))
+            {
+                Directory.CreateDirectory(Path.Combine(filePath, SAVE_SUBFOLDER_LOG));
+            }
+
+            filename = filePath + Path.DirectorySeparatorChar + SAVE_SUBFOLDER_LOG + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
         }
         else
         {
-            filename = Application.persistentDataPath + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
+            if (!Directory.Exists(Path.Combine(Application.persistentDataPath, SAVE_SUBFOLDER_LOG)))
+            {
+                Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, SAVE_SUBFOLDER_LOG));
+            }
+
+            filename = Application.persistentDataPath + Path.DirectorySeparatorChar + SAVE_SUBFOLDER_LOG + Path.DirectorySeparatorChar + "logfile" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
         }
 
 
