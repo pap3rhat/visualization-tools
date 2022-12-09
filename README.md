@@ -42,6 +42,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <ul>
 <li><a href="#gaussian-blur">Gaussian blur</a></li>
 <li><a href="#high-pass-filter">High-pass filter</a></li>
+<li><a href="#example-images">Example images</a></li>
 </ul></li>
 </ul>
 </li>
@@ -261,7 +262,8 @@ The important part now is how the kernel weights $w_i$ are designed. Getting rid
 ```
 So $w_i=\frac{1}{9} \\ \forall i\in\[0..8\]$. <br />
 As the size of such an averaging kernel increases, the neighborhood $W$ increases and the individual kernel weights decrease. So more pixels are involved in the averging step which makes the color transition smoother; hence the image appears more blurry. <br />
-However, using such an averaging kernel lets the final image appear a bit "boxy"; hence why a low-pass filter that is implemented in such a fashion is referred to as *Box blur*.
+However, using such an averaging kernel lets the final image appear a bit "boxy"; hence why a low-pass filter that is implemented in such a fashion is referred to as *Box blur*. <br />
+The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
 /TODO evtl doch Fourier ansprechen, damit box mittels transformation in frquenzbereich erklärt werden kann? Zu komplex?
 
@@ -314,7 +316,8 @@ In order to get a two-dimensional kernel, the kernel simply gets multiplied with
 \end{bmatrix} 
 
 ```
-which is exactly the kernel from above!
+which is exactly the kernel from above! <br />
+The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
 /TODO Bild, dass vergleich zeigt? 
 
@@ -366,10 +369,18 @@ For the $3 \times 3$ Gaussian blur kernel this yields
 	-1 & -2 & -1 
 \end{bmatrix} 
 ```
+The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
 #####  *Implementation remarks*
 1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
 3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+
+
+
+#### *Example images*
+The pictures below show the effects of the above described linear filters using a $5 \times 5$ kernel.
+
+![result](https://user-images.githubusercontent.com/61543847/206709089-6bdbe9c3-e6b8-4d4f-8174-2cda4e4c5c7a.png)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
