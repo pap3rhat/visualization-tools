@@ -146,9 +146,9 @@ The package contains a view different folders filled with scripts, materials and
 #### *Visualization effects function*
 In the following the different parts contributing to the visualization effects function will be listed. 
 * *visu-tools > Editor > ControlShaderEditor* : Controls how the inspector for the ControlShader script looks. 
-* *visu-tools > materials* : Contains three different materials that all use a different shader. 
+* *visu-tools > materials > Visualization Materials* : Contains three different materials that all use a different shader. 
 * *visu-tools > Scripts > Visualization Scripts* : Contains four different scripts. Three of them, *Depth, ImageFilter, MotionField*, are classes with the necessary methods to use/apply the corresponding shader. The fourth file, _ControlShader_, is "the heart". It is derived from mono-behaviour and delegates the task of rendering the image with the correct post-processing effect on it. 
-* *visu-tools > Shader* : Contains four files. Three of them are shader files and one of them is a shader include file. The shader files contain a shader with only one subshader, but multiple passes that use different fragment shaders.
+* *visu-tools > Shader > Visualization Shader* : Contains four files. Three of them are shader files and one of them is a shader include file. The shader files contain a shader with only one subshader, but multiple passes that use different fragment shaders.
 
 The only part important for the **basic usage** is the *ControlShader* script. (The other parts require at least some knowledge about applying full screen post-processing shaders in Unity. Refer to the Unity manual for information on that topic.) **The visualization effects function is now added to your project as follows:**
 1. In the hierarchy click on the camera object to which you want apply the post-processing visualization effects.
