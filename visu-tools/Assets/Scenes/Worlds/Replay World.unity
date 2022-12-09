@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &663251766 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1011834436931365436, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
+  m_PrefabInstance: {fileID: 2063661734}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &728877929
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,6 +685,23 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 1011834436931365438, guid: 97472084a22d0df4a85f3638b20c540d, type: 3}
   m_PrefabInstance: {fileID: 2063661734}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2086073030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663251766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49ad162117d383d4687bf0bc92ece3a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 2086073029}
+  grabberMaterial: {fileID: 2100000, guid: 264565ed2d2765745b54cfa25bc9d4b8, type: 2}
+  filePath: 
+  motionSave: 0
+  depthSave: 0
 --- !u!1 &1854825000093384096
 GameObject:
   m_ObjectHideFlags: 0
