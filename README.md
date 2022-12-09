@@ -42,6 +42,8 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <ul>
 <li><a href="#gaussian-blur">Gaussian blur</a></li>
 <li><a href="#high-pass-filter">High-pass filter</a></li>
+<li><a href="#sharpening">Sharpening</a></li>
+<li><a href="#radial-blur">Radial blur</a></li>
 <li><a href="#example-images">Example images</a></li>
 </ul></li>
 </ul>
@@ -240,6 +242,8 @@ Applying an image processing effect now results in manipulating each RGB value f
 /TODO hier wahrschienlich au frequenzen erwähnen, damit des unten mehr Sinn ergibt
 /TODO Fourier??????????
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Linear filters
 Linear filters are image pre-processing effects in which the final value of a pixel is given by a linear combination of the value of the pixel itself and of the values of the pixels in its neighborhood $W$. <br />
 This calculation is realized by *convolution*. During convolution a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...), a so called *kernel*, is  slid over the image matrix. Every entry of this kernel represents a weight *w_i* with which the value of the image pixel underneath the kernel gets multiplied. After every image pixel value underneath the kernel got multiplied with the corresponding weight, those values get summed up. This sum is now the final value of the image pixel that is positioned underneath the kernels middle. <br />
@@ -330,6 +334,7 @@ Additionally Linear sampling is being used in order to reduce the look-up operat
 
 3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the blur effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *High-pass filter*
 A high-pass filter is basically the inverse of a low-pass filter. Instead of keeping the images low frequencies and discarding its high frequencies, a high-pass filter discards the images low frequencies and keeps its high frequencies.  This strengthens the disparity between the pixel values and erases area information. Same as for the low-pass filter: The more is discarded, the stronger this effect. <br />
@@ -375,15 +380,61 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
 3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+#### *Sharpening*
+Sharpening an image basically means to enhance the edges contained within an image. So the images high frequencies need to exaggerated while the images low frequencies stay the same. In contrast to a low-pass or high-pass filter no frequencies are discarded, only added. <br />
+This adding of high frequencies can be realized by doing a convolution on each RGB-channel of the image. 
 
-#### *Example images*
-The pictures below show the effects of the above described linear filters using a $5 \times 5$ kernel.
-
-![result](https://user-images.githubusercontent.com/61543847/206709089-6bdbe9c3-e6b8-4d4f-8174-2cda4e4c5c7a.png)
-
+The kernel weights $w_i$ are again chosen quite simply. Since all that has to be done is adding $x$ times the high frequencies to the original image, a $3 \times 3$ Gaussian kernel looks as follows
+```math
+\begin{bmatrix}
+	0 & 0 & 0 \\
+	0 & 1 & 0 \\
+	0 & 0 & 0 
+\end{bmatrix}  + x \cdot \left(
+\begin{bmatrix}
+	0 & 0 & 0 \\
+	0 & 1 & 0 \\
+	0 & 0 & 0 
+\end{bmatrix} - \frac{1}{16} \cdot \begin{bmatrix}
+	1 & 2 & 1 \\
+	2 & 4 & 2 \\
+	1 & 2 & 1 
+\end{bmatrix}  \right)
+= \frac{1}{16} \cdot  \begin{bmatrix}
+	-x & -2x & -x \\
+	-2x & 13x & -2x \\
+	-x & -2x & -x 
+\end{bmatrix} 
+```
+where $x$ determines how much of the images high frequencies should be added to the original image. The higher $x$ the stronger the sharpening effect.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+#### *Radial blur*
+As the name suggest a radial blur is a kind of low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a Gaussian blur. <br />
+For a Box blur or a Gaussian blur the image gets smoothed along the horizontal axis by a kernel that for example looks like this ( $3 \times 3$ one-dimensional Gaussian kernel)
+```math
+\frac{1}{4} \cdot  \begin{bmatrix}
+	1 & 2 & 1 
+\end{bmatrix} 
+```
+and the image gets smoothed along the vertical axis by a kernel that for example looks like this ( $3 \times 3$ one-dimensional Gaussian kernel)
+```math
+\frac{1}{4} \cdot  \begin{bmatrix}
+	1 \\ 2 \\ 1 
+\end{bmatrix} 
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+#### *Example images*
+The pictures below show the effects of the above described linear filters using a $5 \times 5$ kernel. 
+![result](https://user-images.githubusercontent.com/61543847/206720796-fa4093bd-04e5-433a-b737-43c10b194665.png)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 
 
