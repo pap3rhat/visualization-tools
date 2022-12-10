@@ -1,3 +1,5 @@
+ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist auch noch nicht vollständig fertig (aber schon zu nem guten Teil).
+
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com) 
 <br />
 
@@ -44,6 +46,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#high-pass-filter">High-pass filter</a></li>
 <li><a href="#sharpening">Sharpening</a></li>
 <li><a href="#radial-blur">Radial blur</a></li>
+<li><a href="#radial-blur-with-desaturation">Radial blur with desaturation</a></li>
 <li><a href="#example-images">Example images</a></li>
 </ul></li>
 </ul>
@@ -229,10 +232,11 @@ For the **basic usage** the *TextureGrabber* file has to be used as follows. <br
 ## Technical background
 
 This section tries to (at least partially) explain how the different visualization tools work in theory. It will also cover some of the implementation details and things to be aware of when using the *visu-tool package* in your own project.
+/TODO au bio stuff in read me? is eigentlich scho zu lang für ne read me und ghehört au ned wirklich zum technischne zeug dazu, also propbably ned
 
 ### Interlude
 Before thinking about how an *individual* visualization tool works, one has to think about how they work *in general*. As explained here <a href="#about-the-project">About The Project</a>, the purpose of the visualization tools is to extract some kind of "meta data" from what a participant perceives during a VR-navigation-experiment. Broadly speaking, what they perceive is a rapid sequence of frames, where each frame itself can be interpreted as an image. This image shows part of the virtual world as seen through the virtual eyes/virtual camera of the participant. As the participant moves those eyes/this camera the image will change as it shows a different part of the virtual world. Because the changing of frames is happening at a very high speed (for example 400 frames per second) the participant cannot distinguish between the different frames and instead perceives it as a continuous stream of information that simulates movement. <br />
-In order to now visualize the "meta data" in this stream, one starts by simply saving the movement information (position + rotation at a frame x) of the participant and replaying it with the same frame-rate as the participant experienced. This replay is what will now be manipulated. More precisely, each frame will be seen as an image on which an image-processing effect will be applied before it gets shown. In Unity this is done by using post-processing shaders that effect the final render image output of the camera by changing every pixels color within a fragment shader. <br />
+In order to now visualize the "meta data" in this stream, one starts by simply saving the movement information (position + rotation at a frame x) of the participant and replaying it with the same frame-rate as the participant experienced. This replay is what will now be manipulated. More precisely, each frame will be seen as an image on which an image-processing effect will be applied before it gets shown. In Unity this is done by using post-processing shaders that effect the final render image output of the camera by changing every pixel color within a fragment shader. <br />
 So, essentially, one has to understand what an image is in this context and how it can be manipulated.
 
 #### *What is an image*
@@ -245,7 +249,7 @@ Applying an image processing effect now results in manipulating each RGB value f
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Linear filters
-Linear filters are image pre-processing effects in which the final value of a pixel is given by a linear combination of the value of the pixel itself and of the values of the pixels in its neighborhood $W$. <br />
+Linear filters are image pre-processing effects in which the final value of a pixel is given by a linear combination of the value of the pixel itself and of the values of the pixel in its neighborhood $W$. <br />
 This calculation is realized by *convolution*. During convolution a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...), a so called *kernel*, is  slid over the image matrix. Every entry of this kernel represents a weight *w_i* with which the value of the image pixel underneath the kernel gets multiplied. After every image pixel value underneath the kernel got multiplied with the corresponding weight, those values get summed up. This sum is now the final value of the image pixel that is positioned underneath the kernels middle. <br />
 When dealing with colored images, this process is separately done for every color channel. So the final red/green/blue value of every pixel is determined independently of the other two colors. 
 
@@ -254,7 +258,7 @@ When dealing with colored images, this process is separately done for every colo
 
 #### *Gaussian blur*
 A Gaussian blur is a way of applying a low-pass filter to an image. A low-pass filter "smoothes" the image by keeping its low frequencies and discarding its high frequencies. Depending on how low/high a frequency needs to be in order to count as a low/high frequency, the image will appear more or less smooth/blurry; The more is discarded, the blurry the image will appear. <br />
-This "discarding/keeping decision" can be realized by doing a convolution on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixels in its neighborhood $W$, where each of those values in weighted by a kernel. The bigger the kernel the bigger the neighborhood $W$. 
+This "discarding/keeping decision" can be realized by doing a convolution on each RGB-channel of the image. So the final red/green/blue value of a pixel $(j,k)$ is the result of the current red/green/blue pixel value added to the values of the pixel in its neighborhood $W$, where each of those values in weighted by a kernel. The bigger the kernel the bigger the neighborhood $W$. 
 
 The important part now is how the kernel weights $w_i$ are designed. Getting rid of high frequencies can be seen as decreasing the disparity between the different pixel values; this can simply be realized by averaging over them. So a $3 \times 3$ kernel would look like this:
 ```math
@@ -265,7 +269,7 @@ The important part now is how the kernel weights $w_i$ are designed. Getting rid
 \end{bmatrix} 
 ```
 So $w_i=\frac{1}{9} \\ \forall i\in\[0..8\]$. <br />
-As the size of such an averaging kernel increases, the neighborhood $W$ increases and the individual kernel weights decrease. So more pixels are involved in the averging step which makes the color transition smoother; hence the image appears more blurry. <br />
+As the size of such an averaging kernel increases, the neighborhood $W$ increases and the individual kernel weights decrease. So more pixel are involved in the averging step which makes the color transition smoother; hence the image appears more blurry. <br />
 However, using such an averaging kernel lets the final image appear a bit "boxy"; hence why a low-pass filter that is implemented in such a fashion is referred to as *Box blur*. <br />
 The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
@@ -288,7 +292,7 @@ Here $x$ is the distance of the currently looked at pixel from the center pixel 
 /TODO vllt mehr erklären warum Einfach produkt (seperierbarkeit!)
 
 This can further be simplified, because the discrete Gaussian function can be approximated by the binomial distribution. So in order to get the correct kernel weights it is enough to simply look at Pascals triangle. <br />
-Each row in Pascals triangle can be interpreted as a one-dimensional kernel that weights the pixels closer to the center more that those farther away. For example the second row (counting starts at $0$!) would yield the following kernel
+Each row in Pascals triangle can be interpreted as a one-dimensional kernel that weights the pixel closer to the center more that those farther away. For example the second row (counting starts at $0$!) would yield the following kernel
 ```math
 \begin{bmatrix}
 	1 & 2 & 1 
@@ -322,8 +326,6 @@ In order to get a two-dimensional kernel, the kernel simply gets multiplied with
 ```
 which is exactly the kernel from above! <br />
 The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
-
-/TODO Bild, dass vergleich zeigt? 
 
 #####  *Implementation remarks*
 1. For efficiency reasons the separability of the kernel is being used. In the first shader pass a horizontal Gaussian blur is applied to the image, this gets saved as an intermediate result. On this intermediate result a vertical Gaussian blur is applied, resulting in a final output-image that is blurred horizontally and vertically.
@@ -380,6 +382,8 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
 3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
 
+/TODO ggf bio stuff
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Sharpening*
@@ -408,7 +412,12 @@ The kernel weights $w_i$ are again chosen quite simply. Since all that has to be
 	-x & -2x & -x 
 \end{bmatrix} 
 ```
-where $x$ determines how much of the images high frequencies should be added to the original image. The higher $x$ the stronger the sharpening effect.
+where $x$ determines how much of the images high frequencies should be added to the original image. The higher $x$ the stronger the sharpening effect. <br />
+The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
+
+#####  *Implementation remarks*
+1. If you select the *Sharpening* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+2. The scaling factor $x$ is set to $0.85$ and cannot be controlled via the inspector. If you want to be able to control this value, you have to include it into the inspector yourself.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -426,12 +435,62 @@ and the image gets smoothed along the vertical axis by a kernel that for example
 	1 \\ 2 \\ 1 
 \end{bmatrix} 
 ```
+For a radial blur the image gets smoothed along another axis/vector that is dependent on the currently looked at pixel and the *origin of the blur*. The *origin of the blur* refers to a point in the image that stays unaffected by the filter (i.e. it does not get blurred).  The farther away a pixel from this origin, the more it gets blurred. This results in an effect that can be seen in <a href="#example-images">Example images</a>; once with the origin being at the center of the image and once with the origin being off-center.
+
+Mathematically the vector that determines the "smoothing-axis" is given by 
+```math
+((j,k) - (j_{origin}, k_{origin}))^T = \begin{bmatrix}
+	j \\ k 
+\end{bmatrix}  - \begin{bmatrix}
+	j_{origin} \\ k_{origin}
+\end{bmatrix}  =  \begin{bmatrix}
+	j-j_{origin} \\ k-k_{origin}
+\end{bmatrix}
+```
+where $(j,k)$ refers to a pixel (in on color layer) of image and $(j_{origin}, k_{origin})$ refers to the origin of the blur.
+
+In order to get the final color of a pixel $(j,k)$ its neighbors along this axis are being looked at. More concrete, these neighbors are
+```math
+\pm \frac{n-1}{2} \cdot \begin{bmatrix}
+	j-j_{origin} \\ k-k_{origin}
+\end{bmatrix}
+```
+where $n$ determines how many pixel (including $(j,k)$ ) are being looked at; the size of the neighborhood $W$. <br />
+As for the Gaussian blur or the Box blur, the value of each pixel in $W$ gets weighted by a weight $w_i$ and afterwards their sum is being set as the final color value of $(j,k)$. In the case of $|W|=3$, the weights could be given by the following Gaussian kernel
+```math
+\frac{1}{4} \cdot  \begin{bmatrix}
+	1 & 2 & 1 
+\end{bmatrix} 
+```
+
+The way how $W$ is defined clearly shows why pixel farther away from the origin of the blur are more effected by the blurring than pixel closer to the origin of the blur. <br />
+The farther away a pixel from the origin, the bigger their in-between distance; hence the magnitude of 
+```math  
+\begin{bmatrix}
+	j-j_{origin} \\ k-k_{origin}
+\end{bmatrix}
+```
+gets bigger as well. <br />
+Thus using this unnormalized(!) vector in determining $W$ leads to the individual pixel in $W$ being farther apart from each other as $(j,k)$ gets farther away from the origin of the blur. Resulting in more high image frequencies being discarded for farther away pixel and less high image frequencies being discarded for closer pixel. As the distance between the pixel in $W$ grows linearly with the distance of $(j,k)$ to the origin, the blur effect is linear as well.
+
+#####  *Implementation remarks*
+1. If you select the *RadialBlur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+2. If you select the *RadialBlur* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
+
+/TODO: ggf bio stuff
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+#### *Radial blur with desaturation*
+This filter is an extension of the <a href="#radial-blur">Radial blur</a> described above.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Example images*
 The pictures below show the effects of the above described linear filters using a $5 \times 5$ kernel. 
-![result](https://user-images.githubusercontent.com/61543847/206720796-fa4093bd-04e5-433a-b737-43c10b194665.png)
+![result](https://user-images.githubusercontent.com/61543847/206854573-f7dc2db4-837a-4239-852f-6a13b434007b.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
