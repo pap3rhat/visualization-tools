@@ -50,6 +50,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#motion-blur">Motion blur</a></li>
 <li><a href="#example-images">Example images</a></li>
 </ul></li>
+<li><a href="#motion-field">Motion field</a>
 </ul>
 </li>
 <li><a href="#license">License</a></li>
@@ -580,10 +581,75 @@ The pictures below show the effects of the above described linear filters using 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 /TODO bei motion filed "moved" erklären
+### Motion Field
+The *motion field* of a frame is a vector field where each vector captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. Here scene refers to the virtual world which the participant can explore. <br />
+In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand the basics on how Unity renders a 3D scene on a 2D screen; so how a computer graphics pipeline (aka rendering pipeline) works. 
 
+/TODO: erklären was rendern heißt?
+
+Unity's built-in render pipeline (which this project uses) uses *rasterization* (aka *forward rendering*). This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections. /TODO ray tracing? 
+
+#### *Rasterization*
+A scene (here: the virtual world) contains multiple objects (most of the time), for example a tree, a house or a treehouse. Each of these objects is defined by a set of *vertices*, which get connected via edges into *triangles*. Those triangles can have a color or a texture on them, which makes the objects look like they are supposed to (e.g. a green tree or a brick house). <br />
+The definition of those vertices happens within a *local coordinate system* (aka *object coordinate system*, aka *model coordinate system*). So each object is defined within its own coordinate system. <br />
+The scene itself is ankered within a *world coordinate system*.  
+
+The first step of forward rendering is to transform each objects vertices local coordinates into coordinates in the world coordinate system; this is called *model transformation*. In order to to transform a single vertex's local coordinates into the world coordinates they need to be scaled, rotated and translated appropriately.
+/TODO: example Bild? <br />
+For this to be efficient, matrices are being used to perform those operations. Because the scene is three-dimensional the homogeneous matrices are four-dimensional and the vertices local coordinates get adjusted to be four-dimensional as well. /TODO: erklären? Probbaly schon, aber wahrschienlich ned hier sondern nur in arbeit<br />
+The four-dimensional matrix used for scaling a vertex is defined as
+```math 
+S_{x,y,z} = \begin{bmatrix}
+	s_x & 0 & 0 & 0\\
+	0 & s_y & 0 & 0\\
+	0 & 0 & s_z & 0\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+where $s_i$ determines how much the vertex should be scaled in $i$-direction. <br />
+The four-dimensional matrix used for translating a vertex is defined as
+```math 
+T_{x,y,z} = \begin{bmatrix}
+	1 & 0 & 0 & t_x\\
+	0 & 1 & 0 & t_y\\
+	0 & 0 & 1 & t_z\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+where $t_i$ determines how much the vertex should be translated in $i$-direction. <br />
+The four-dimensional matrices used for rotating a vertex are defined as /TODO: erklären warum drei? Zusammen mit homogne koordinaten?
+```math 
+R_x = \begin{bmatrix}
+	1 & 0 & 0 & 0\\
+	0 & \cos(\alpha_x) & \sin(\alpha_x) & 0\\
+	0 & -\sin(\alpha_x) & \cos(\alpha_x) & 0\\
+	0 & 0 & 0 & 1
+\end{bmatrix} \\ \\
+R_y = \begin{bmatrix}
+	\cos(\alpha_y) & 0 & -\sin(\alpha_y) & 0\\
+	0 & 1 & 0 & 0\\
+	\sin(\alpha_y) & 0 & \cos(\alpha_y) & 0\\
+	0 & 0 & 0 & 1
+\end{bmatrix} \\ \\
+R_z = \begin{bmatrix}
+	\cos(\alpha_z) &  \sin(\alpha_z) & 0 & 0\\
+	-\sin(\alpha_z) &  \cos(\alpha_z) & 0 & 0\\
+	0 & 0 &1 & 0\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+where $R_i$ determines around which axis the vertex is being rotated and $\alpha_i$ determines with what angle the vertex is being rotated.
+
+/TODO: bspw hier einfügen, dann macht das darunter auch mehr Sinn
+
+In order to be more efficient a vertex is not first transformed with one matrix, then this result is being transformed with another matrix and so on, until the vertex is in world coordinates. Instead the needed matrices are first multiplied together (sequence matters!), the resulting matrix is called *world matrix*. This *world matrix* is not unique to each vertex, but to each object (so all vertices that make up one object are multiplied with the same world matrix).
+
+/TODO: bspw von oben dann hier weiter eklären
+
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- LICENSE -->
