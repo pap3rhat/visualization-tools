@@ -1,4 +1,4 @@
-ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist auch noch nicht vollständig fertig (aber schon zu nem guten Teil).
+ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist auch noch nicht vollständig fertig (aber schon zu nem guten Teil). Die TODOs in der Read.me können ignoriert werde, die sind für mich als Erinnerungen an Überlegungen etc. gedacht.
 
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com) 
 <br />
@@ -47,6 +47,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#sharpening">Sharpening</a></li>
 <li><a href="#radial-blur">Radial blur</a></li>
 <li><a href="#radial-blur-with-desaturation">Radial blur with desaturation</a></li>
+<li><a href="#motion-blur">Motion blur</a></li>
 <li><a href="#example-images">Example images</a></li>
 </ul></li>
 </ul>
@@ -422,8 +423,8 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Radial blur*
-As the name suggest a radial blur is a kind of a low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a Gaussian blur. <br />
-For a Box blur or a Gaussian blur the image gets smoothed along the horizontal axis by a kernel that for example looks like this ( $3 \times 3$ one-dimensional Gaussian kernel)
+As the name suggest a radial blur is a kind of a low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a <a href="#gaussian-blur">Gaussian blur</a>. <br />
+For a Box blur or a <a href="#gaussian-blur">Gaussian blur</a> the image gets smoothed along the horizontal axis by a kernel that for example looks like this ( $3 \times 3$ one-dimensional Gaussian kernel)
 ```math
 \frac{1}{4} \cdot  \begin{bmatrix}
 	1 & 2 & 1 
@@ -456,7 +457,7 @@ In order to get the final color of a pixel $(j,k)$, its neighbors along this axi
 \end{bmatrix}
 ```
 where $n$ determines how many pixel (including $(j,k)$ ) are being looked at; the size of the neighborhood $W$. <br />
-As for the Gaussian blur or the Box blur, the value of each pixel in $W$ gets weighted by a weight $w_i$ and afterwards their sum is being set as the final color value of $(j,k)$. In the case of $|W|=3$, the weights could be given by the following Gaussian kernel
+As for the <a href="#gaussian-blur">Gaussian blur</a> or the Box blur, the value of each pixel in $W$ gets weighted by a weight $w_i$ and afterwards their sum is being set as the final color value of $(j,k)$. In the case of $|W|=3$, the weights could be given by the following Gaussian kernel
 ```math
 \frac{1}{4} \cdot  \begin{bmatrix}
 	1 & 2 & 1 
@@ -549,6 +550,28 @@ As the distance between each image pixel $(j,k)$ and the origin of the blur grow
 2. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
 3. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the scale of the radial blur. This value scales the vector between each pixel and the origin of the blur; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
 
+/TODO: ggf bio stuff
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+#### *Motion blur*
+As the name implies this effect is also a kind of a low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a <a href="#gaussian-blur">Gaussian blur</a>. <br />
+Like the <a href="#radial-blur">radial blur</a> it smooths each pixel along an axis that is generally not the horizontal and/or vertical axis; the axis is dependent on each pixel. More precisely, the axis is given by the *motion vector* of each pixel. Broadly speaking a pixel's *motion vector* specifies the direction in which a pixel "moved" from the previous frame to the current frame; the bigger the magnitude of this vector, the more the pixel "moved". A more detailed description of what this motion vector exactly is, how to calculate it and an explanation on why "moved" is being used here, is given in /TODO hier einfügen wo es steht und ggf diese formulierung no ändern wenn doch ned so erklärt.
+
+This definition of the "smoothing axis" leads to the following observation: The more a pixel "moved" from the previous frame to the current frame (i.e. the magnitude of the corresponding motion vector is big), the blurrier it will appear in the final image. Hence, if both frames look exactly the same (no pixel "moved"), there will be no blur at all. 
+
+In a vr-navigation-experiment the direction of each motion vector is dependent on the direction in which the participant moves their virtual eyes/camera. For example, if the participant moves their virtual eyes/camera to the right, the motion vectors will point to the left. So for each pixel the blur would be done with the horizontal axis as the "smoothing axis". More on how the motion vectors depend on the participant's movement here: /TODO zu motion field verweisen
+
+/TODO: irgendwie nen bspw Bild dafür machen, vermutlich aus Programm rausscreenshoten, weil von 2 bildern kann ja ned einfach präzise berechnet werden (könnte nur mit irgendwie nem OF algo, aber des is ja ned des gleiche)
+
+#####  *Implementation remarks*
+1. The motion vectors used in this effect are gotten from the *_CameraMotionVectorsTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.MotionVectors* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the motion vector corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The movement in the x-direction is given by the value of the red channel, the movement in the y-direction is given by the value of the green channel. The values range from $-1$ to $1$. Because the values tend to be very close to $0$ (not a lot of movement for each pixel), they are scaled by $\frac{1}{Time.deltaTime}$.
+2. If you select the *Motion blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
+3. If you select the *Motion blur* shader option in the *ControlShader* script you can get the additional option to change the scale of the motion blur. This value scales each motion; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
+
+/TODO: ggf bio stuff
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Example images*
@@ -558,6 +581,8 @@ The pictures below show the effects of the above described linear filters using 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
+
+/TODO bei motion filed "moved" erklären
 
 
 
