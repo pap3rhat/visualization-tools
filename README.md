@@ -334,7 +334,7 @@ Additionally Linear sampling is being used in order to reduce the look-up operat
 
 /TODO maybe Linear sampling erklären
 
-3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the blur effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -380,7 +380,7 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 
 #####  *Implementation remarks*
 1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
-3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
 
 /TODO ggf bio stuff
 
@@ -416,13 +416,13 @@ where $x$ determines how much of the images high frequencies should be added to 
 The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
 #####  *Implementation remarks*
-1. If you select the *Sharpening* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
+1. If you select the *Sharpening* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
 2. The scaling factor $x$ is set to $0.85$ and cannot be controlled via the inspector. If you want to be able to control this value, you have to include it into the inspector yourself.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Radial blur*
-As the name suggest a radial blur is a kind of low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a Gaussian blur. <br />
+As the name suggest a radial blur is a kind of a low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a Gaussian blur. <br />
 For a Box blur or a Gaussian blur the image gets smoothed along the horizontal axis by a kernel that for example looks like this ( $3 \times 3$ one-dimensional Gaussian kernel)
 ```math
 \frac{1}{4} \cdot  \begin{bmatrix}
@@ -449,7 +449,7 @@ Mathematically the vector that determines the "smoothing-axis" is given by
 ```
 where $(j,k)$ refers to a pixel (in on color layer) of image and $(j_{origin}, k_{origin})$ refers to the origin of the blur.
 
-In order to get the final color of a pixel $(j,k)$ its neighbors along this axis are being looked at. More concrete, these neighbors are
+In order to get the final color of a pixel $(j,k)$, its neighbors along this axis are being looked at. More concrete, these neighbors are
 ```math
 \pm \frac{n-1}{2} \cdot \begin{bmatrix}
 	j-j_{origin} \\ k-k_{origin}
@@ -474,8 +474,9 @@ gets bigger as well. <br />
 Thus using this unnormalized(!) vector in determining $W$ leads to the individual pixel in $W$ being farther apart from each other as $(j,k)$ gets farther away from the origin of the blur. Resulting in more high image frequencies being discarded for farther away pixel and less high image frequencies being discarded for closer pixel. As the distance between the pixel in $W$ grows linearly with the distance of $(j,k)$ to the origin, the blur effect is linear as well.
 
 #####  *Implementation remarks*
-1. If you select the *RadialBlur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value that stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect.
-2. If you select the *RadialBlur* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
+1. If you select the *Radial Blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
+2. If you select the *Radial Blur* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
+3. If you select the *Radial Blur* shader option in the *ControlShader* script you can get the additional option to change the scale of the radial blur. This value scales the vector between each pixel and the origin of the blur; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
 
 /TODO: ggf bio stuff
 
@@ -483,8 +484,70 @@ Thus using this unnormalized(!) vector in determining $W$ leads to the individua
 
 
 #### *Radial blur with desaturation*
-This filter is an extension of the <a href="#radial-blur">Radial blur</a> described above.
+This filter is an extension of the <a href="#radial-blur">Radial blur</a> filter described above. As such the image gets blurred from an origin of blur towards the images edges; the farther away a pixel from the origin, the blurrier it appears. Additionally each pixel's color saturation is also dependent on the distance between $(j,k)$ and $(j_{origin},k_{origin})$; the farther away a pixel from the origin, the less it is saturated. This results in the image only containing gray values at the points furthest away from  $(j_{origin},k_{origin})$ and fully saturated values at $(j_{origin},k_{origin})$. An example of this filter can be seen here:  <a href="#example-images">Example images</a>.
 
+The way the desaturation part is calculated is pretty straight forwards. <br />
+First the maximal distance between the origin of the blur and any image pixel gets calculated. As the image is rectangular, no matter where the origin is positioned, the maximal distance will always be achieved with a corner pixel (i.e. $(0,0), (0,1), (1,0), (1,1) $). Thus
+```math  
+maxDist =  \left \lVert \max \left \{ 
+\begin{bmatrix}
+	0-j_{origin} \\ 0-k_{origin}
+\end{bmatrix},
+\begin{bmatrix}
+	0-j_{origin} \\ 1-k_{origin}
+\end{bmatrix},
+\begin{bmatrix}
+	1-j_{origin} \\ 0-k_{origin}
+\end{bmatrix},
+\begin{bmatrix}
+	1-j_{origin} \\ 1-k_{origin}
+\end{bmatrix}
+\right \} \right \rVert
+```
+This value is obviously the same for every pixel. 
+
+As a second step a scale value gets calculated for each individual pixel. This value determines how far a pixel is positioned from the origin of the blur relative to the maximal distance. 
+```math  
+scale = \frac{\left \lVert \begin{bmatrix}
+		j-j_{origin} \\ k-k_{origin}
+	\end{bmatrix} \right \rVert}{maxDist} 
+```
+
+Finally, the color for each pixel can be determined by a linear interpolation between the pixels intermediate color (i.e. after applying the radial blur on it) and its grayscale intermediate color. Thus
+```math  
+(j,k) = lerp[(j,k)', gray((j,k)'), scale] = (j,k)' + scale \cdot [gray((j,k)') - (j,k)']
+```
+where $(j,k)'$ refers to the pixels color after the radial blur and  $gray((j,k)')$ refers to the grayscale value of the color after the radial blur. More precisely, $gray((j,k)')$ is defined as
+```math  
+gray((j,k)') =  0.299 \cdot (j,k)'.r + 0.587 \cdot (j,k)'.g + 0.114 \cdot (j,k)'.b;
+```
+where $(j,k)'.r$ is the red channel value of $(j,k)'$ (analogous for the blue and green channel). <br />
+If the final color of $(j,k)$ is determined separately for each color channel, in the $lerp$-function $(j,k)'$ only refers to that color channels value and $gray((j,k)')$ is the value defined above. If the final color of $(j,k)$ is determined for all color channels at once, in the $lerp$-function $(j,k)'$ refers to $[(j,k)'.r, (j,k)'.g, (j,k)'.b]$ and $gray((j,k)')$ is defined as $[gray((j,k)'), gray((j,k)'), gray((j,k)')]$ (so the same value for each color channel).
+
+From this definition follows that the pixels furthest away from the origin of the blur are completely desaturated.
+```math  
+scale = \frac{\left \lVert \begin{bmatrix}
+		j-j_{origin} \\ k-k_{origin}
+	\end{bmatrix} \right \rVert}{maxDist}  = \frac{maxDist}{maxDist} = 1
+```
+```math  
+(j,k) = lerp[(j,k)', gray((j,k)'), 1] = (j,k)' + 1 \cdot [gray((j,k)') - (j,k)'] = (j,k)' - (j,k)' + gray((j,k)') = gray((j,k)')
+```
+It also follows that the origin of the blur is not desaturated at all
+```math  
+scale = \frac{\left \lVert \begin{bmatrix}
+		j_{origin}-j_{origin} \\ k_{origin}-k_{origin}
+	\end{bmatrix} \right \rVert}{maxDist}  = \frac{0}{maxDist} = 0
+```
+```math  
+(j,k) = lerp[(j,k)', gray((j,k)'), 0] = (j,k)' + 0 \cdot [gray((j,k)') - (j,k)'] = (j,k)' 
+```
+As the distance between each image pixel $(j,k)$ and the origin of the blur grows linearly, the desaturation effect is linear as well.
+
+#####  *Implementation remarks*
+1. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
+2. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
+3. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the scale of the radial blur. This value scales the vector between each pixel and the origin of the blur; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
