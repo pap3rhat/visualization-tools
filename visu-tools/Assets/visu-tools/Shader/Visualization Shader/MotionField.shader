@@ -2,7 +2,7 @@ Shader "Optical/MotionField"
 {
 	CGINCLUDE
 	#include "UnityCG.cginc"
-	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
+	#include "Assets/visu-tools/Shader/Visualization Shader/ColorMethods.cginc"
 
 	// appdata to vertex shader
 	struct a2v

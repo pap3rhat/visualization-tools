@@ -7,7 +7,7 @@ Shader "Optical/ImageFilter"
 
 	CGINCLUDE
 	#include "UnityCG.cginc"
-	#include "Assets/visu-tools/Shader/ColorMethods.cginc"
+	#include "Assets/visu-tools/Shader/Visualization Shader/ColorMethods.cginc"
 
 	// appdata to vertex shader
 	struct a2v
@@ -120,7 +120,7 @@ Shader "Optical/ImageFilter"
 
 
 		// linear interpolation between 'normal' color and grayscale color
-		float scale = (maxDist - (maxDist - length(diffVec))) / maxDist; // the farther away from origin a pixel is the more desaturated (gray) it will be
+		float scale = length(diffVec) / maxDist; // the farther away from origin a pixel is the more desaturated (gray) it will be
 		float3 lerped = lerp(col.xyz, intensity(col).xxx, scale);
 
 		return float4(lerped, 1);
