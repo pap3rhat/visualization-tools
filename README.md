@@ -51,8 +51,12 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#example-images">Example images</a></li>
 </ul></li>
 <li><a href="#motion-field">Motion field</a>
-</ul>
+<ul>
+<li><a href="#forward-rendering">Forward rendering</a></li>	
+<li><a href="#motion-vectors">Motion vectors</a></li>	
+</ul>	
 </li>
+</ul>
 <li><a href="#license">License</a></li>
 <li><a href="#acknowledgments">Acknowledgments</a></li>
 </ol>
@@ -697,11 +701,62 @@ This matrix is called *view matrix V*. Every vertex $x$ gets multiplied by this 
 
 /TODO: Bidler für camera stuuf? Siehe botsch VL
 
-The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates are  
+The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). <br />
+In order to transform the camera coordinates into normalized device coordinates, the camera's viewing volume (the *frustum*) has to be mapped into the unit cube. This *frustum* is defined by
+1. the camera's *near* and *far* clipping planes
+2. how far the camera sees to the *left* and the *right* sides
+3. how far the camera sees to the *top* and the *bottom*
 
+/TODO: Bild?
+
+Projecting the frustum into the unit cube (*frustum mapping*) is now done with the following matrix
+```math 
+\begin{bmatrix}
+	\frac{2n}{r-l} & 0 & \frac{l+r}{r-l} & 0\\
+	0 & \frac{2n}{t-b} & \frac{b+t}{t-b} & 0\\
+	0 & 0 & -\frac{n+f}{f-n} & -\frac{2nf}{f-n}\\
+	0 & 0 & -1 & 0
+\end{bmatrix} 
+```
+with 
+```math
+a = -\frac{n+f}{f-n}, b = -\frac{2nf}{f-n}
+```
+where $n, f, l, r, t, b$ refer to the definition above. <br />
+This matrix is called the *projection matrix P*. 
+
+/TODO: erklären warum des funktioniert? Auwand für was des iege egal is für den Rest, aber so is es halt einfach nur ne matrix mit stuff die da is weil sie da is
+
+So, for every vertex $x$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied by $M \cdot V \cdot P$; thus $x' = x \cdot M \cdot V \cdot P$. <br />
+For every vertex and each frame the view matrix and the projection matrix are the same; only the world matrix differs. Hence, in order to be efficient $V \cdot P$ only gets calculated once each frame and is being used for every vertex. 
+
+Now every vertex is in normalized screen coordinates that range from $-1$ to $1$. As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
+* $l$ determines where on the left side of the monitor the image should start (i.e. how much room should be on the left side of the monitor screen); e.g. $l=0$ means the image starts at left border of the monitor screen
+* $b$ determines where on the bottom side of the monitor the image should start (i.e. how much room should be on the bottom side of the monitor screen); e.g. $b=0$ means the image starts at bootm border of the monitor screen
+* $w$ determine sthe width of the image
+* $h$ determines the height of the image
+
+
+This transformation is simply done by using the following matrix
+```math 
+\begin{bmatrix}
+	\frac{w}{2} & 0 & 0 & \frac{w}{2} + l\\
+	0 & \frac{h}{2} & 0 & \frac{h}{2} + b\\
+	0 & 0 & \frac{1}{2} & \frac{1}{2}\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+/TODO: matrix erklären? Den Teil überhaupt erwähnen? Für motion vectoren eigentlich egal, aber ohne is es irgendwie unvollständig
+
+After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles, it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. /TODO: Erklärun?Prob ned 
+
+What has been explained until now is just part of the forward rendering pipeline. There are still a few steps to follow, for example *rasterization* that computes which pixel can even be seen and which can't. However, those parts are not necessary to understand how the motion vectors are being calculated and thus are not explained here. /TODO: rasterization irgendwie stärker ansprechen, aber eig egal oder??
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+#### *Motion vectors*
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## License
