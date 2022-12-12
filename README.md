@@ -75,7 +75,7 @@ Furthermore this project contains a function to save the motion vectors texture 
 
 <br />
 
-TheVRr-experiments are designed and performed with Unity, thus all the evaluation tools are also made with Unity. 
+The VR-experiments are designed and performed with Unity, thus all the evaluation tools are also made with Unity. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -584,13 +584,13 @@ The pictures below show the effects of the above described linear filters using 
 /TODO bei motion filed "moved" erklären
 ### Motion Field
 The *motion field* of a frame is a vector field where each vector captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. Here scene refers to the virtual world which the participant can explore. <br />
-In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand the basics on how Unity renders a 3D scene on a 2D screen; so how a computer graphics pipeline (aka rendering pipeline) works. 
+In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand some of the basics on how Unity renders a 3D scene on a 2D screen; so how (parts of) a *computer graphics pipeline* (aka *rendering pipeline*) works. 
 
 /TODO: erklären was rendern heißt?
 
-Unity's built-in render pipeline (which this project uses) uses *rasterization* (aka *forward rendering*). This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections. /TODO ray tracing? 
+Unity's built-in render pipeline (which this project uses) uses *forward rendering*. This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections. /TODO ray tracing? 
 
-#### *Rasterization*
+#### *Forward rendering*
 A scene (here: the virtual world) contains multiple objects (most of the time), for example a tree, a house or a treehouse. Each of these objects is defined by a set of *vertices*, which get connected via edges into *triangles*. Those triangles can have a color or a texture on them, which makes the objects look like they are supposed to (e.g. a green tree or a brick house). <br />
 The definition of those vertices happens within a *local coordinate system* (aka *object coordinate system*, aka *model coordinate system*). So each object is defined within its own coordinate system. <br />
 The scene itself is ankered within a *world coordinate system*.  
@@ -643,10 +643,61 @@ where $R_i$ determines around which axis the vertex is being rotated and $\alpha
 
 /TODO: bspw hier einfügen, dann macht das darunter auch mehr Sinn
 
-In order to be more efficient a vertex is not first transformed with one matrix, then this result is being transformed with another matrix and so on, until the vertex is in world coordinates. Instead the needed matrices are first multiplied together (sequence matters!), the resulting matrix is called *world matrix*. This *world matrix* is not unique to each vertex, but to each object (so all vertices that make up one object are multiplied with the same world matrix).
+In order to be more efficient a vertex is not first transformed with one matrix, then this result is being transformed with another matrix and so on, until the vertex is in world coordinates. Instead the needed matrices are first multiplied together (sequence matters!), the resulting matrix is called *world matrix M*. This *world matrix* is not unique to each vertex, but to each object (so all vertices that make up one object are multiplied with the same world matrix).
 
 /TODO: bspw von oben dann hier weiter eklären
 
+After every vertex's coordinates got transformed from their corresponding local coordinate system into the world coordinate system, they get transformed in the *camera coordinate system*; this transformation is called *view transformation*. <br />
+The camera coordinate system is a coordinate system where the participants virtual camera/eyes is position at the coordinate systems origin and is looking down the negative z-axis. The participants virtual camera is defined by
+1. The camera's location in world coordinates $e$
+2. The camera's viewing direction $v$
+3. The camera's up direction $u$
+4. The camera's right direction $r$
+5. $v$, $u$, $r$ are orthonormal
+
+A *standard camera* (i.e. a camera that is positioned at the world coordinate system origin and looks down the negative z-axis; which is what we want) is defined as
+1. $e = (0,0,0)$
+2. $v = (0,0,-1)$
+3. $u = (0,1,0)$
+4. $r = (1,0,0)$
+
+Converting the standard camera's coordinate system into the participants camera's coordinate system  can be realized by the following matrix
+```math 
+\begin{bmatrix}
+	r_x & u_x & -v_x & e_x\\
+	r_y & u_y & -v_y & e_y\\
+	r_z & u_z & -v_z & e_z\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+It is easy to see that this matrix does nothing more than projecting the unit vector in x-direction onto the $r$-vector of the participants camera, the unit vector in y_direction onto the $u$-vector of the participants camera, the unit vector in z_direction onto the $v$-vector of the participants camera and moves the standard camera's origin to the origin of the participants camera $e$. <br />
+This matrix therefore does the opposite of what is needed, it transforms the standard camera's coordinate system into the participants camera's coordinate system. Thus the opposite operation (transforming the participants camera's coordinate system into the standard camera's coordinate system) can be realized by
+```math 
+\begin{bmatrix}
+	r_x & u_x & -v_x & e_x\\
+	r_y & u_y & -v_y & e_y\\
+	r_z & u_z & -v_z & e_z\\
+	0 & 0 & 0 & 1
+\end{bmatrix} ^{-1} = 
+\begin{bmatrix}
+	r_x & r_y & r_z & 0\\
+	u_x & u_y & u_z & 0\\
+	-v_x & -v_y & -v_z & 0\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+\cdot
+\begin{bmatrix}
+	1 & 0 & 0 & -e_x\\
+	0 & 1 & 0 & -e_y\\
+	0 & 0 & 1 & -e_z\\
+	0 & 0 & 0 & 1
+\end{bmatrix} 
+```
+This matrix is called *view matrix V*. Every vertex $x$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $x'= x \cdot M \cdot V$. Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
+
+/TODO: Bidler für camera stuuf? Siehe botsch VL
+
+The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates are  
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
