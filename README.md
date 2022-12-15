@@ -601,7 +601,7 @@ The scene itself is ankered within a *world coordinate system*.
 
 The first step of forward rendering is to transform each objects vertices local coordinates into coordinates in the world coordinate system; this is called *model transformation*. In order to to transform a single vertex's local coordinates into the world coordinates they need to be scaled, rotated and translated appropriately.
 /TODO: example Bild? <br />
-For this to be efficient, matrices are being used to perform those operations. Because the scene is three-dimensional the homogeneous matrices are four-dimensional and the vertices local coordinates get adjusted to be four-dimensional as well. /TODO: erklären? Probbaly schon, aber wahrschienlich ned hier sondern nur in arbeit<br />
+For this to be efficient, matrices are being used to perform those operations. Because the scene is three-dimensional the homogeneous matrices are four-dimensional and the vertices local coordinates get adjusted to be four-dimensional as well. /TODO: diese koordinaten definitv erklären, da später für prjoektion sehr wichtig, vllt abe rne dhier sondenr nur in arbeit<br />
 The four-dimensional matrix used for scaling a vertex is defined as
 ```math 
 S_{x,y,z} = \begin{bmatrix}
@@ -649,7 +649,7 @@ where $R_i$ determines around which axis the vertex is being rotated and $\alpha
 
 In order to be more efficient a vertex is not first transformed with one matrix, then this result is being transformed with another matrix and so on, until the vertex is in world coordinates. Instead the needed matrices are first multiplied together (sequence matters!), the resulting matrix is called *world matrix M*. This *world matrix* is not unique to each vertex, but to each object (so all vertices that make up one object are multiplied with the same world matrix).
 
-/TODO: bspw von oben dann hier weiter eklären
+/TODO: bspw von oben dann hier weiter eklären, auf reihenfolge eingehen
 
 After every vertex's coordinates got transformed from their corresponding local coordinate system into the world coordinate system, they get transformed in the *camera coordinate system*; this transformation is called *view transformation*. <br />
 The camera coordinate system is a coordinate system where the participants virtual camera/eyes is position at the coordinate systems origin and is looking down the negative z-axis. The participants virtual camera is defined by
@@ -697,19 +697,19 @@ This matrix therefore does the opposite of what is needed, it transforms the sta
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-This matrix is called *view matrix V*. Every vertex $x$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $x'= x \cdot M \cdot V$. Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
+This matrix is called *view matrix V*. Every vertex $v$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $v'=  V \cdot M \cdot v$ (where $v$ and $v'$ are $4 \times 1$ column vectors). Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
 
 /TODO: Bidler für camera stuuf? Siehe botsch VL
 
-The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). <br />
-In order to transform the camera coordinates into normalized device coordinates, the camera's viewing volume (the *frustum*) has to be mapped into the unit cube. This *frustum* is defined by
+The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). /TODO: hier vllt cube anders definierne , weil 4d und ned 3d; vllt aber au in text zu homogenen koordinaten sagen,d ass die letzte immer dazu gedacht wird wenn notwenidg oder so <br />
+In order to transform the camera coordinates into normalized device coordinates, the camera's viewing volume (the *frustum*) first has to be mapped into the unit cube. This *frustum* is defined by
 1. the camera's *near* and *far* clipping planes
 2. how far the camera sees to the *left* and the *right* sides
 3. how far the camera sees to the *top* and the *bottom*
 
 /TODO: Bild?
 
-Projecting the frustum into the unit cube (*frustum mapping*) is now done with the following matrix
+Projecting the frustum (*frustum mapping*) is now done with the following matrix
 ```math 
 \begin{bmatrix}
 	\frac{2n}{r-l} & 0 & \frac{l+r}{r-l} & 0\\
@@ -718,24 +718,32 @@ Projecting the frustum into the unit cube (*frustum mapping*) is now done with t
 	0 & 0 & -1 & 0
 \end{bmatrix} 
 ```
-with 
-```math
-a = -\frac{n+f}{f-n}, b = -\frac{2nf}{f-n}
-```
 where $n, f, l, r, t, b$ refer to the definition above. <br />
-This matrix is called the *projection matrix P*. 
+This matrix is called the *projection matrix P*. For every vertex and each frame the view matrix and the projection matrix are the same; only the world matrix differs. Hence, in order to be efficient $P \cdot V$ only gets calculated once each frame and is being used for every vertex. 
 
 /TODO: erklären warum des funktioniert? Auwand für was des iege egal is für den Rest, aber so is es halt einfach nur ne matrix mit stuff die da is weil sie da is
+Wahrscheinclich schon erklären, dann mach auch perspective divison sinn -> man sieht halt das z in w drin is und dadurhc perspektive rein kommt
 
-So, for every vertex $x$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied by $M \cdot V \cdot P$; thus $x' = x \cdot M \cdot V \cdot P$. <br />
-For every vertex and each frame the view matrix and the projection matrix are the same; only the world matrix differs. Hence, in order to be efficient $V \cdot P$ only gets calculated once each frame and is being used for every vertex. 
+After this projection the coordinates are, however, not yet in normalized device coordinates. Instead they are given in *clip space coordinates*; hence why this coordinate space is referred to as *clip space*. <br />
+Given the coordinates of a vertex $v'$, its clip space coordinates range from $-w'$ to $w'$ where $w'$ refers to the fourth coordinate of $v'$. More precisely $v'$ is given as
+```math 
+v' = \begin{bmatrix}
+	w' \cdot x' \\
+	w' \cdot y' \\
+	w' \cdot z' \\
+	w'
+\end{bmatrix} 
+```
+where $w' \not= 0$, because $v'$ is a point and not a vector. <br />
+In order to transform those coordinates into normalized device coordinates, there is not more to do than dividing every coordinate by $w'$ (this is referred to as *perspective division* or *homogenization*). Doing this with every vertex then truly maps the frustum into the unit cube. It should be noted that there will be (a lot of) vertices for which it does not hold that their coordinates are between $-w'$ and $w'$ or $-1$ to $1$ after perceptive division. Those vertices are the ones outside the frustum given by the virtual camera; the ones the virtual camera cannot see. The implications of this will be acknowledged later.
 
-Now every vertex is in normalized screen coordinates that range from $-1$ to $1$. As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
+So, for every vertex $v$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied from the left by $P \cdot V \cdot M$; thus $v' = P \cdot V \cdot M \cdot v$. And afterwards has to be normalized by $w'$.
+
+Now every vertex is in normalized screen coordinates that range from $-1$ to $1$ (like mentioned above this range is not true for every vertex, but what happens here with those vertices shall not matter as they will be ignored later anyway). As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
 * $l$ determines where on the left side of the monitor the image should start (i.e. how much room should be on the left side of the monitor screen); e.g. $l=0$ means the image starts at left border of the monitor screen
 * $b$ determines where on the bottom side of the monitor the image should start (i.e. how much room should be on the bottom side of the monitor screen); e.g. $b=0$ means the image starts at bootm border of the monitor screen
 * $w$ determine sthe width of the image
 * $h$ determines the height of the image
-
 
 This transformation is simply done by using the following matrix
 ```math 
@@ -748,13 +756,30 @@ This transformation is simply done by using the following matrix
 ```
 /TODO: matrix erklären? Den Teil überhaupt erwähnen? Für motion vectoren eigentlich egal, aber ohne is es irgendwie unvollständig
 
-After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles, it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. /TODO: Erklärun?Prob ned 
+After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles (*primitive assembly*), it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. Thus what is now left is a set of *primitives* (here: triangles) in window/pixel coordinates. <br />
+Not all those primitives are, however, within the coordinate range of the screen. Some might not be in there at all, some might only partially be in there. This is, as mentioned earlier, due to not every vertex being in the view field of the virtual camera. All the parts that are not within the viewport range are not being *clipped*; hence why this step is called *clipping*. If only parts of a primitive got clipped in this step, the remains will get connected back into new triangles/new primitives. 
 
-What has been explained until now is just part of the forward rendering pipeline. There are still a few steps to follow, for example *rasterization* that computes which pixel can even be seen and which can't. However, those parts are not necessary to understand how the motion vectors are being calculated and thus are not explained here. /TODO: rasterization irgendwie stärker ansprechen, aber eig egal oder??
+/TODO bild für clipping?
+
+/TODO rasterization hier erwähnen/erklären -> notwendig um fragment shader zu erklären
+
+/TODO schauen, ob das hier drunter no sinn ergibt oder ned
+
+What has been explained until now is just part of the forward rendering pipeline. There are still a few steps to follow in between and/or afterwards, for example lightning and shading steps. However, those parts are not necessary to understand how the motion vectors are being calculated and thus are not explained here. /TODO: schauen was davon doch vllt noch interesant/notwendig, bspw. rasterization, wobei eig nix davon
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Motion vectors*
+With the knowledge about how every vertex of a scene object is transformed and projected from 3D to 2D space, it is quite easy to understand how to calculate a motion vector for every pixel on the screen.
+
+As mentioned above, a motion vector is a vector that captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. In order to obtain such a vector for every pixel of the screen, the following things have to be know for each vertex within the scene
+1. The vertexes model-view-projection matrix of the current frame; short $MVP$ matrix (note: it might be called $MVP$ matrix, however, if a vertex if given as a column vector it might be more correct to call it $PVM$ matrix, because that is the calculation order)
+2. The vertexes model-view-projection matrix of the previous frame; short $MVP_{prev}$ matrix (note: it might be called $MVP_{prev}$ matrix, however, if a vertex if given as a column vector it might be more correct to call it $PVM_{prev}$ matrix, because that is the calculation order)
+3. If a vertex has moved within the object it is part of (so within its local coordinate system), that it moved and its old position (in its local coordinates)
+
+/TODO gugn was gfenau iin fragment shader kommt, wie rasterization funktioniert, ob vertex und fragment shader eklärt werden müssen (zu welchem ausmas) 
+
+AHHHHHHHHHHHH
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
