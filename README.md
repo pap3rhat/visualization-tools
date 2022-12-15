@@ -761,11 +761,25 @@ Not all those primitives are, however, within the coordinate range of the screen
 
 /TODO bild für clipping?
 
-/TODO rasterization hier erwähnen/erklären -> notwendig um fragment shader zu erklären
+As a next step all the primitives go through a step called *rasterization*. In this step the primitives get mapped into a raster that basically represents the pixel that the monitor will be displaying in the end. This process is quite complex and it is not even known how most graphic cards do it, however, how it is done is also not really important. The only thing that is important, is that at this point we have individual *pixel*, also referred to as *fragments*, that will be worked on. 
 
-/TODO schauen, ob das hier drunter no sinn ergibt oder ned
+In the last steps of the forward rendering pipeline these fragments will get shaded (i.e. it will be determined what color they have in the end) and it will be determined which fragments are even visible. Up until now all objects in the scene got looked at and then their parts that are not within the visual camera's frustum got discarded. However, it has not been considered yet what happens if one object is in front of another object within that frustum; it only makes sense if in the final image the front object can be seen and the other object is absent. <br />
+Checking which object gets displayed and which not is actually quite easy. In all the transformations and projections above, the $z$-value (depth value) never got discarded and has always been kept in a $0$ to $1$ range. Thus after the transformation and projections are done those values can simply be stored in a *z-buffer*. So, in the end, each fragment not only has a color value (after shading), but also a *depth value*. If two fragments are rasterized to the same monitor pixel now only their depth values have to be compared. The smaller the value, the closer to the virtual camera; hence the fragment with the lower depth value "wins" and gets displayed at the corresponding monitor pixel. 
 
-What has been explained until now is just part of the forward rendering pipeline. There are still a few steps to follow in between and/or afterwards, for example lightning and shading steps. However, those parts are not necessary to understand how the motion vectors are being calculated and thus are not explained here. /TODO: schauen was davon doch vllt noch interesant/notwendig, bspw. rasterization, wobei eig nix davon
+
+
+This was a more or less complete explanation of how forward rendering works. For the next part it is not really important to remember every single detail, but the gist of what has just been explained should be understood. In order to make it easier, here's a short summary
+* The virstual world a participant sees is called scene. This scenen contains objects.
+* Each object is made up of tiny tringles that are defined by 3 vertices each. The coordintes of these verticies are determined within a local coordinate system for the object itself. 
+* The scene itself is ankered within a world coordinate system.
+* Each vertex of the 
+* 
+*
+*
+* /TODO fertig machen
+
+/TODO Bild von pipeline?
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
