@@ -53,7 +53,8 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#motion-field">Motion field</a>
 <ul>
 <li><a href="#forward-rendering">Forward rendering</a></li>	
-<li><a href="#motion-vectors">Motion vectors</a></li>	
+<li><a href="#calculating-motion-vectors">Calculating motion vectors</a></li>	
+<li><a href="#displaying-motion-vectors">Displaying motion vectors</a></li>	
 </ul>	
 </li>
 </ul>
@@ -757,7 +758,7 @@ This transformation is simply done by using the following matrix
 /TODO: matrix erklären? Den Teil überhaupt erwähnen? Für motion vectoren eigentlich egal, aber ohne is es irgendwie unvollständig
 
 After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles (*primitive assembly*), it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. Thus what is now left is a set of *primitives* (here: triangles) in window/pixel coordinates. <br />
-Not all those primitives are, however, within the coordinate range of the screen. Some might not be in there at all, some might only partially be in there. This is, as mentioned earlier, due to not every vertex being in the view field of the virtual camera. All the parts that are not within the viewport range are not being *clipped*; hence why this step is called *clipping*. If only parts of a primitive got clipped in this step, the remains will get connected back into new triangles/new primitives. 
+Not all those primitives are, however, within the coordinate range of the screen. Some might not be in there at all, some might only partially be in there. This is, as mentioned earlier, due to not every vertex being in the view field of the virtual camera. All the parts that are not within the viewport range are now being *clipped*; hence why this step is called *clipping*. If only parts of a primitive got clipped in this step, the remains will get connected back into new triangles/new primitives. 
 
 /TODO bild für clipping?
 
@@ -769,21 +770,35 @@ Checking which object gets displayed and which not is actually quite easy. In al
 
 
 This was a more or less complete explanation of how forward rendering works. For the next part it is not really important to remember every single detail, but the gist of what has just been explained should be understood. In order to make it easier, here's a short summary
-* The virstual world a participant sees is called scene. This scenen contains objects.
-* Each object is made up of tiny tringles that are defined by 3 vertices each. The coordintes of these verticies are determined within a local coordinate system for the object itself. 
-* The scene itself is ankered within a world coordinate system.
-* Each vertex of the 
-* 
-*
-*
-* /TODO fertig machen
+<details>
+<summary>Summary</summary>
+<ol>
+<li>
+The virtual world a participant sees is called scene. This scene contains objects. Each object is made up of triangles that are each defined by a set of three vertices. The vertices coordinates are defined within a local coordinate system (each object has its own).
+
+<li>
+The scene is anchored within a global coordinate system. In order to compare all objects with each other and project them from 3D space to 2D space, they have to "live" in the same coordinate system. Thus all the vertices coordinates get transformed from their respective local coordinate systems into the global coordinate system. For each object this is done using a world matrix $M$.
+
+<li>
+The camera is an object within the scene itself. In order to to make it easier to project from 3D space to 2D space, all coordinates get transformed in the camera coordinate system. This is done using the view matrix $V$.
+
+<li>	
+Now the coordinates are in the simplest form possible and can be projected from 3D space to 2D space. This is done by using the projection matrix $P$.
+
+<li>
+After the projection all coordinates are clip space coordinates. Clip space coordinates range from $-w'$ to $w'$, where $w'$ refers to the fourth coordinate of a corresponding vertex $v'$ (so for each vertex this range is different). Now perspective division happens: All coordinates of $v'$ get divided by $w'$, leaving them in the range $[-1,1]$. Those are called normalized device coordinates. They can now be transformed into the final window/pixel coordinates.
+
+<li>	
+Now that all coordinates are in their "final form" a few things can happen. The vertices get connected back together into triangles (now also referred to as primitives). Everything that cannot be seen from the camera is being clipped (discarded). The remaining primitives go through rasterization (which basically maps the primitives to pixel on the monitor), shading and finally the test which once are even visible. This leaves us with the final image.	
+</ol>
+</details>
 
 /TODO Bild von pipeline?
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#### *Motion vectors*
+#### *Calculating motion vectors*
 With the knowledge about how every vertex of a scene object is transformed and projected from 3D to 2D space, it is quite easy to understand how to calculate a motion vector for every pixel on the screen.
 
 As mentioned above, a motion vector is a vector that captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. In order to obtain such a vector for every pixel of the screen, the following things have to be know for each vertex within the scene
@@ -791,9 +806,69 @@ As mentioned above, a motion vector is a vector that captures the per-pixel, scr
 2. The vertexes model-view-projection matrix of the previous frame; short $MVP_{prev}$ matrix (note: it might be called $MVP_{prev}$ matrix, however, if a vertex if given as a column vector it might be more correct to call it $PVM_{prev}$ matrix, because that is the calculation order)
 3. If a vertex has moved within the object it is part of (so within its local coordinate system), that it moved and its old position (in its local coordinates)
 
-/TODO gugn was gfenau iin fragment shader kommt, wie rasterization funktioniert, ob vertex und fragment shader eklärt werden müssen (zu welchem ausmas) 
+The calculation of the individual motion vectors is now being done in two parts. The first parts works on each vertex (3D space), the second part works on each fragment (2D space). 
 
-AHHHHHHHHHHHH
+The first part happens within a *vertex shader*. Every vertex within the scene gets send through the vertex shader. Inside the vertex shader it gets transformed and projected into clip space, this is done as explained <a href="#forward-rendering">here</a>. Thus the output is a vertex in clip space coordinates. Additionally the output can also contained more data, for example a color for the vertex or other vectors. This is quite practical, because it allows to pass additional data into the *fragment shader*. <br />
+As the name suggest the fragment shader works on the individual fragments that are obtained after rasterization. This is where the second part of calculating the motion vectors happens. The input of the fragment shader is a fragment with its corresponding window/pixel coordinates as well as the additional data from the vertex shader output. One important thing to note here is that not every vertex corresponds to a fragment. So in order to, for example, obtain the color of a fragment (if that is data the output of the vertex shader contains), barycentrical interpolation is being used. It is also possible to the set more values for each fragment, e.g. texture data (but this is not important for what needs to be done here). The output of the fragment shader is a color (RGBA) for each fragment. 
+
+/TODO bild für interpolation mit Fraben is einfach als erklären
+
+Onto the actual calculation of the motion vectors. 
+
+Each vertex gets passed into the vertex shader. In here the current clip space position of the vertex gets calculated. This done by using the corresponding matrices, like so
+```math 
+v' = P \cdot V \cdot M \cdot v
+```
+where $v$ refers to the 4D local coordinates of the vertex of the current frame. This is the same as the output of the vertex shader. However, because of the rasterization step, this data would be "lost" (i.e. not available in the fragment shader) if it is not set as additional data for the output of the vertex shader. <br />
+Inside the vertex shader the previous clip space potion of the vertex will be calculated as well. This is again done by using the corresponding matrices
+```math 
+v'_{prev} = P_{prev} \cdot V_{prev} \cdot M_{prev} \cdot v
+```
+Here it is necessary to distinguished between two cases to get the meaning of $v$. If the vertex did not move inside its local coordinate system (not the global one!) from the previous frame to the current frame, then $v$ is simply defined as the 4D local coordinates of the vertex of the current frame. If however the vertex moved inside the local coordinate system from the previous frame to the current frame, $v$ is defined as the 4D coordinates of the vertex of the previous frame (so its previous potions within the local coordinate system). $v'_{prev}$ will also be part of the vertex shader output. <br />
+In conclusion the output of the vertex shader will contain the current positon of the vertex in clip space coordinates as well as the previous poisiton of the vertex in clip space coordinates.
+
+After the vertex shader, rasterization happens. Each fragment that comes out of this step will contains information about its current position in clip space coordinates and its previous potion in clip space coordinates. As explained above those coordinates might have been obtained via interpolation. Every fragment now gets passed into the fragment shader <br />
+Inside the fragment shader the current and the previous normalized device coordinates are being calculated. This is simply done by diving each coordinate through the corresponding $w$ coordinate.
+```math 
+v'' = \frac{v'.xyz}{v'.w} 
+```
+```math 
+v''_{prev} = \frac{v'_{prev}.xyz}{v'_{prev}.w}
+```
+
+$v''$ and $v''_{prev}$ are now both normalized device coordinates in a range from $-1$ to $1$. In order to handle them better they now get scaled into a the viewport range of $0$ to $1$.
+```math 
+v_{pos} =\frac{v'' +1}{2} 
+```
+```math 
+v_{prevPos} =\frac{v''_{prev} +1}{2}
+```
+
+Those coordinates are all that is needed to calculate the motion vector for the current fragment. By just looking at all the explanation above, it might be hard to understand why this is the case. So, to put it simply, just look at what $v_{pos}$ and $v_{prevPos}$ stand for. <br />
+$v_{pos}$ describes the position of a fragment (a pixel) within the *viewport space*. This space simple defines a square with the lower left coordinate of $(0,0)$ and the upper right coordinate $(1,1)$. So it is basically like the final window space (that can have the height and width of the monitor), but normalized. Thus $v_{pos}$ simply defines where the currently looked at fragment is positioned within this square in the current frame. <br />
+Similarly, $v_{prevPos}$ defines where the currently looked at fragment has been positioned within this square in the previous frame.
+
+So, quite frankly speaking, $v_{pos}$ and $v_{prevPos}$ tells us where a pixel was in the previous frame and where it is in this frame. (Note: The pixel on the screen however never really move, their colors just change. But for simplicity reasons just say they move when in reality the color simply gets displayed by a different pixel and it is more of a color moving than a pixel moving.)
+
+/TODO: bild von den ganzen kack spaces einfügen, gugn wie des mit dem movemnt besser erklärt werden kann (wahreschinlich aber nur in arbeit und end hier)
+
+In order to now obtain the motion vector within the fragment shader, there is not mucch more left to do than simply subtract the previous position from the current position
+```math 
+m = v_{pos} - v_{prevPos} 
+```
+
+So, finally, we have $m$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  atexture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+#### *Displaying motion vectors*
+
+/TODO algo für farbe erklären
+
+/TODO bio stuff ggf
+
+/TODO vllt erwähnen das in frgament shader image filter zeug passiert. vllt des au oben irgendwie erwähnen (zumindest ina rbeit sollte es da sein)
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
