@@ -56,9 +56,7 @@ Shader "Optical/MotionField"
 	fixed4 frag(v2f IN) : SV_Target
 	{
 		// motion in x-direction is stored in the textures red channel, motion in y-direction is stored in the textures green channel
-		float2 motion;
-		motion.x = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).r;
-		motion.y = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).g;
+		float2 motion= UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).rg;
 
 		motion = motion * unity_DeltaTime.y * _Scale; // scaling vector so it's visible; making it frame-rate independent
 

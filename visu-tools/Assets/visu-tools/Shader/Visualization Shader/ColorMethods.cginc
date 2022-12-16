@@ -4,9 +4,9 @@ float3 motionToHSV(float2 motion)
 	float v = 1; // no motion -> white
 	float lengthSquared = motion.x * motion.x + motion.y * motion.y;
 	float s = sqrt(lengthSquared / 2.0); // more motion-> higher saturation of color
-	float aCos = degrees(acos(motion.y / sqrt(lengthSquared)));
-	float h = motion.x > 0 ? aCos : 360 - aCos;
-
+	float aCos = degrees(acos(clamp(motion.x / sqrt(lengthSquared), -1, 1)));
+	float h = motion.y > 0 ? aCos : 360 - aCos;
+		
 	float3 hsv;
 	hsv.x = h;
 	hsv.y = s;
