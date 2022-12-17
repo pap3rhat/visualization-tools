@@ -238,6 +238,8 @@ For the **basic usage** the *TextureGrabber* file has to be used as follows. <br
 <!-- TECHNICAL BACKGROUND -->
 ## Technical background
 
+/TODO vectoren als vektoren machn
+
 This section tries to (at least partially) explain how the different visualization tools work in theory. It will also cover some of the implementation details and things to be aware of when using the *visu-tool package* in your own project.
 /TODO au bio stuff in read me? is eigentlich scho zu lang für ne read me und ghehört au ned wirklich zum technischne zeug dazu, also propbably ned
 
@@ -857,18 +859,71 @@ In order to now obtain the motion vector within the fragment shader, there is no
 m = v_{pos} - v_{prevPos} 
 ```
 
-So, finally, we have $m$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  atexture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
+So, finally, we have $m$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  a texture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### *Displaying motion vectors*
 
-/TODO algo für farbe erklären
+Visualizing a motion vector for each fragment requires a bit of pre-thoughts. It is important to ask how a vector should be visualized and what that visualization than tells us. Here the approach got chosen to visualize each motion vector as a color, as this is quite efficient to do and can convey information about the vector. 
+The information that the color should contain are the direction of the motion vector as well as its magnitude. 
 
-/TODO bio stuff ggf
+More precisely, the direction of the vector shall be displayed via a color. For example a red color means that the motion vector points to the right side of the screen and a cyab color means that the motion vector points to the left side of the screen. <br />
+The magnitude of the vector shall be displayed via the colors intensity/saturation. The more movement the higher the magnitude of the motion vector the more saturated the color. For example white means no movement at all (motion vector is zero, so magnitude is zero) and a vibrant red means a lot of movement (a high magnitude of the motion vector).
+
+Realizing this conversion from motion vector to color can be done with the help of the HSV color space. HSV stands for hue, value and saturation; so in this color space each color is represented using three values (similar to the RGB space). //TODO bild einfügen 
+* Hue *H* is given in the range $[0°,360°]$, so it is an angle. For example $0°$ corresponds to red and $180°$ corresponds to cyan. 
+* Saturation *S* is given in the range $[0,1]$. $0$ meaning no saturation at all (the final color is then basically a gray scale color) ans $1$ meaning totally saturated (so a very vibrant color). 
+* Value *V* is given in the range $[0,1]$. $0$ meaning the color si not light whatsoever (e.g. black) and $1$ meaning the color is totally lit (e.g. white)
+
+It is easy to understand why this color space works very well with how it is imagined to represent the motion vectors as colors. 
+With the description of "No motion should equal a white pixel and motion in some direction should equal a color whose saturation is depended on the vector's magnitude, but it should always be well lit." we get the following values for a motion vector $\vec{m}$.
+
+As the color should always be well lit, set $$V=1$$. 
+
+As the saturation should depend on the the vector's magnitude set
+```math 
+S = \frac{\sqrt{(\vec{m}.x)^2 + (\vec{m}.y)^2}}{\sqrt{2}}
+```
+where $\sqrt{(\vec{m}.x)^2 + (\vec{m}.y)^2}$ is the magnitude of $\vec{m}$ and $\sqrt{2}$ is the maximal magnitude a motion vector can have. So $S$ is the magnitude of $\vec{m}$ relative to the maximum. The maximal magnitude can be explained be looking at the range of the $x$ and $y$ coordinate of $\vec{m}$. Because each coordinate of $\vec{m}$ is obtained by subtracting a number between $[0,1]$ from a number between $[0,1]$ (as explained <a href="#calculating-motion-vectors">here</a>), the maximal absolute difference for each is $1$. (This would, for example, mean that the pixel "moved" from the bottom left corner of the screen to the top right corner of the screen between two consecutive frames; it is easy to see that that truly is the maximal distance a pixel can "move", so the math is also intuitively correct.) And the magnitude of a vector with $1$ in the $x$- and $y$ coordinate is simply $\sqrt{1^2 + 1^2} = \sqrt{2}$.
+
+As the hue should depend on the vector's direction set
+```math 
+\alpha = degrees \left( acos\left( \frac{\vec{m}.x}{\sqrt{(\vec{m}.x)^2 + (\vec{m}.y)^2}} \right)\right) 
+```
+and then
+```math 
+H = \vec{m}.y > 0 \space ? \space \alpha \space : \space 360 - \alpha
+```
+This requires a bit more explanation. The hue of a color is basically given as an angle within a unit circle if we set the origin of a coordinate system in the middle of this circle and draw a vector from the origin of the circle to the color we want (/TODO: Bild). This vector can be seen as the motion vector if it were normalized to a magnitude of $1$. For this vector $\vec{v}$ we could determine the angle relative to the x-axis by simply calculating 
+```math 
+\alpha = degrees \left( acos\left( \frac{\vec{v}.x}{1} \right)\right) 
+```
+this is basic trigonometry. However, because the arcus cosine only gives back values between $[0, \pi]$ or $[0°, 180°]$, it is important to see what happens if $\vec{v}$ points into the lower half of the unit circle. For example if $\vec{v}$ point to the lower left quadrant of the circle, say $\alpha = 225°$. First, observe that this changes the sign of the $y$-component to be negative. Generally a negative sign in the $y$-component indicates that the vector points into the lower half. Second, observe that the $x$-component of this vector is the same as the $x$-component of a vector with an angle of $\alpha = 135°$; so the $\alpha$ calculated above is the same for both vectors, both times $\alpha = 135°$. This is obviously a wrong value for a vector with $\alpha = 225°$, however, only if both vectors get measured counterclockwise. If we would measure $\alpha = 225°$ clockwise, it would indeed be $\alpha = 135°$ as well! So, for a vector pointing into the lower half we would need to measure the angles in the other direction, but this is simply the same as subtracting the $\alpha$ from $360°$. Hence why we need to do
+```math 
+\alpha = \vec{v}.y  > 0 \space ? \space \alpha \space : \space 360 - \alpha
+```
+So, for every vector that is pointing into the upper half just keep the $\alpha$ value calculated using trigonometry. And for every vector pointing into the lower half, measure the other way around or simply subtract the trigonometric result from $360°$. <br />
+This now uniquely maps the direction of a unit vector to a hue. In order to map any vector to a hue, simply adjust the trigonometry by using the magnitude of the vector as the hypotenuses is the arcus cosine. This then gives the dfinition above.
+
+
+With this algorithm it is now possible to map the motion vector of a fragment to a unique color depending on the magnitude and the direction of the motion vector. Set this color (after conversion to RGB color space) as the return value of the fragment shader and it will appear at the fragments position (if that fragment is visible and not another fragment's color gets rendered over it).
+
+#####  *Implementation remarks*
+1. Because the fragment shader always has to give back a color in RGB $[0,1]$ color space, the HSV value will get remapped into that color space before being returned.
+2. Because of floating point errors the value put into the $acos$ function will get clamped between $-1$ and $1$, so the input values for the arcus cosine are always legal. 
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+/TODO bio stuff ggf, da kann man dann vllt au sagenwas für info überhaupt eichtig (richtigung, stärke9 und es dann als überleitung zu was man darasteleln will mit frarben oder so
 
 /TODO vllt erwähnen das in frgament shader image filter zeug passiert. vllt des au oben irgendwie erwähnen (zumindest ina rbeit sollte es da sein)
 
+
+### Depth
+
+/TODO
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
