@@ -253,11 +253,29 @@ So, essentially, one has to understand what an image is in this context and how 
 In this context an image is one single frame that is contained within a $M \times N  \times 3$ dimensional matrix where $M$ is the height of the frame and $N$ is the width of the frame. The $3$ represents the three different RGB-color channels which contain a value form 0 to 255 (or 0 to 1 in Unity; keyword: normalization). So, for example, the value at $(j,k,0) \in M \times N \times 3$ represents the red color value of the pixel at height $j$ and width $k$. <br />
 Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This can simply done by using  matrix operations, one very important matrix operation in this case is *convolution* (more on that later). There are, however, also other methods, for example, just setting the color value by hand.
 
-On important part about an image is that it can be sperated into itsfrequencies.
+On important part about an image is that it can be separated into its frequencies. For an image, frequency refers to the rate of change in pixel intensity values. <br />
+Take a grayscale image for example. Every pixel within this image has a value between $0$ (black) and $255$ (white), this value is also the corresponding intensity of the pixel. Let's take a look at a $4 \times 4$ normalized grayscale (values are between $0$ and $1$) image that looks as follows
+```math
+\begin{bmatrix}
+	1 & 0 & 1 & 0 \\
+	1 & 0 & 1 & 0 \\
+	1 & 0 & 1 & 0 \\
+	1 & 0 & 1 & 0 
+\end{bmatrix} 
+```
+If we take a look at how the values change in the first row (row $0$), we can see that the intensity values change from $1$ to $0$ to $1$ to $0$. This is a high rate of change and thus we say the corresponding frequency is high. The same can be observed for the other rows. So, in conclusion, this image contains a high frequency in the horizontal direction. <br />
+Now look at how the values change in the first column. We can see that the intensity values stay the same (all are $1$). This is a low rate of change (or better: no change at all) and thus we say the corresponding frequency is low. The same can be observed for the other columns. So, in conclusion, this image contains a low frequency in the vertical direction. <br />
+This concept transfers to colored images by either simply calculating the corresponding gray value for each pixel or by looking at each color layer itself.
+
+Of course an image does not have to have the same rate of change for every row/column, it does not even have to have the same rate of change throughout a row/column. This makes it hard to figure out what frequencies an image contains by just looking at it. But there is a neat thing called *discrete Fourier-transformation* that allows us to transform an image from the image space it is in, into a frequency space. The frequency space then can show us how many low and or high frequencies the image contains. It also can show how the frequencies are positioned inside the image (are the just horizontal or vertical or do they have specific angles?). Generally the low frequencies in an image can be found in homogeneous region (e.g. a clear sky, a read wall of a house) and the high frequencies can be found where edges are positioned. So, if for example the image contains a vertical edge, the corresponding frequency space would show that to us. <br />
+The exact way of how to do a discrete Fourier-transformation and why it does what it does, would be more confusing then anything else. The only important thing to take away from this paragraph is that an image contains frequencies that are dependent on the image pixel values. It is possible to transform an image into its frequency space and, of course, back again. One last thing to note here: If we would apply changes to the image in the frequency space and then transform it back into image space, the changes we made would effect the image we see. So, if for example, in the frequency space we cut off some of the high frequencies the image in image space would contain less sharp edges; they would be blurry.
 
 
-/TODO hier wahrschienlich au frequenzen erwähnen, damit des unten mehr Sinn ergibt
-/TODO Fourier??????????
+/TODO: Bild wie in frequenzraum transformiert aussieht, gernell bilder
+/TODO: fourier vllt in appendix erklären
+/TODO: vllt besser erklären
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
