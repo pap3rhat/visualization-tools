@@ -1,4 +1,4 @@
-ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist auch noch nicht vollständig fertig (aber schon zu nem guten Teil). Die TODOs in der Read.me können ignoriert werde, die sind für mich als Erinnerungen an Überlegungen etc. gedacht.
+ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist nahezu fertig. Es gibt noch ien paar TODOs in ihr, aber die sind hauptäschlich für mich als Erinnerung. Manaches davon wird auch gar nicht mehr in die Readme kommen, sondern nur in die Arebit selbst. Generell können und sollten die TODOs einfach ignoriert werden.
 
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com) 
 <br />
@@ -6,7 +6,7 @@ ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Die
 <a name="readme-top"></a>
 <h1 align="center">visu-tools</h1>
 <p align="center">
-Unity package that allows you to apply full screen post-processing effects to your project in real time. Also includes the option to record and later replay your movement. As well as export the motion vectors texture and the depth texture to pngs.
+Unity package that allows you to apply full screen post-processing effects to your project in real time. Also includes the option to record and later replay your movement, as well as to export the motion vectors texture and the depth texture to pngs.
 </p>
 </div>
 
@@ -239,19 +239,22 @@ For the **basic usage** the *TextureGrabber* file has to be used as follows. <br
 <!-- TECHNICAL BACKGROUND -->
 ## Technical background
 
-/TODO vectoren als vektoren machn
-
 This section tries to (at least partially) explain how the different visualization tools work in theory. It will also cover some of the implementation details and things to be aware of when using the *visu-tool package* in your own project.
 /TODO au bio stuff in read me? is eigentlich scho zu lang für ne read me und ghehört au ned wirklich zum technischne zeug dazu, also propbably ned
 
 ### Interlude
 Before thinking about how an *individual* visualization tool works, one has to think about how they work *in general*. As explained here <a href="#about-the-project">About The Project</a>, the purpose of the visualization tools is to extract some kind of "meta data" from what a participant perceives during a VR-navigation-experiment. Broadly speaking, what they perceive is a rapid sequence of frames, where each frame itself can be interpreted as an image. This image shows part of the virtual world as seen through the virtual eyes/virtual camera of the participant. As the participant moves those eyes/this camera the image will change as it shows a different part of the virtual world. Because the changing of frames is happening at a very high speed (for example 400 frames per second) the participant cannot distinguish between the different frames and instead perceives it as a continuous stream of information that simulates movement. <br />
 In order to now visualize the "meta data" in this stream, one starts by simply saving the movement information (position + rotation at a frame x) of the participant and replaying it with the same frame-rate as the participant experienced. This replay is what will now be manipulated. More precisely, each frame will be seen as an image on which an image-processing effect will be applied before it gets shown. In Unity this is done by using post-processing shaders that effect the final render image output of the camera by changing every pixel color within a fragment shader. <br />
-So, essentially, one has to understand what an image is in this context and how it can be manipulated.
+So, essentially, one has to understand what an image is in this context and how it can be manipulated. As well as, how we even obtain such an image. The first part will be explain below, the latter will be explained in the section <a href="#motion-field">Motion field</a>.
+
+/TODO in Arbeit heir irgendwie die Reihenfolge drehen. Erst rendering pipeline, dann image, dann Effekte (oder so ähnlich)
 
 #### *What is an image*
 In this context an image is one single frame that is contained within a $M \times N  \times 3$ dimensional matrix where $M$ is the height of the frame and $N$ is the width of the frame. The $3$ represents the three different RGB-color channels which contain a value form 0 to 255 (or 0 to 1 in Unity; keyword: normalization). So, for example, the value at $(j,k,0) \in M \times N \times 3$ represents the red color value of the pixel at height $j$ and width $k$. <br />
-Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This is simply done by using  matrix operations, one very important matrix operation in this case is *convolution* (more on that later).
+Applying an image processing effect now results in manipulating each RGB value for every pixel ( manipulating all $(j,k,i) \in M \times N \times 3$ ). This can simply done by using  matrix operations, one very important matrix operation in this case is *convolution* (more on that later). There are, however, also other methods, for example, just setting the color value by hand.
+
+On important part about an image is that it can be sperated into itsfrequencies.
+
 
 /TODO hier wahrschienlich au frequenzen erwähnen, damit des unten mehr Sinn ergibt
 /TODO Fourier??????????
@@ -566,13 +569,13 @@ As the distance between each image pixel $(j,k)$ and the origin of the blur grow
 
 #### *Motion blur*
 As the name implies this effect is also a kind of a low-pass filter. So it "smoothes" the image by keeping its low frequencies and discarding its high frequencies. There are however some difference to a Box blur or a <a href="#gaussian-blur">Gaussian blur</a>. <br />
-Like the <a href="#radial-blur">radial blur</a> it smooths each pixel along an axis that is generally not the horizontal and/or vertical axis; the axis is dependent on each pixel. More precisely, the axis is given by the *motion vector* of each pixel. Broadly speaking a pixel's *motion vector* specifies the direction in which a pixel "moved" from the previous frame to the current frame; the bigger the magnitude of this vector, the more the pixel "moved". A more detailed description of what this motion vector exactly is, how to calculate it and an explanation on why "moved" is being used here, is given in /TODO hier einfügen wo es steht und ggf diese formulierung no ändern wenn doch ned so erklärt.
+Like the <a href="#radial-blur">radial blur</a> it smooths each pixel along an axis that is generally not the horizontal and/or vertical axis; the axis is dependent on each pixel. More precisely, the axis is given by the *motion vector* of each pixel. Broadly speaking a pixel's *motion vector* specifies the direction in which a pixel "moved" from the previous frame to the current frame; the bigger the magnitude of this vector, the more the pixel "moved". A more detailed description of what this motion vector exactly is, how to calculate it and an explanation on why "moved" is being used here, is given in <a href="#motion-field">Motion field</a>.
 
 This definition of the "smoothing axis" leads to the following observation: The more a pixel "moved" from the previous frame to the current frame (i.e. the magnitude of the corresponding motion vector is big), the blurrier it will appear in the final image. Hence, if both frames look exactly the same (no pixel "moved"), there will be no blur at all. 
 
-In a vr-navigation-experiment the direction of each motion vector is dependent on the direction in which the participant moves their virtual eyes/camera. For example, if the participant moves their virtual eyes/camera to the right, the motion vectors will point to the left. So for each pixel the blur would be done with the horizontal axis as the "smoothing axis". More on how the motion vectors depend on the participant's movement here: /TODO zu motion field verweisen
+In a vr-navigation-experiment the direction of each motion vector is dependent on the direction in which the participant moves their virtual eyes/camera. For example, if the participant moves their virtual eyes/camera to the right, the motion vectors will point to the left. So for each pixel the blur would be done with the horizontal axis as the "smoothing axis".
 
-/TODO: irgendwie nen bspw Bild dafür machen, vermutlich aus Programm rausscreenshoten, weil von 2 bildern kann ja ned einfach präzise berechnet werden (könnte nur mit irgendwie nem OF algo, aber des is ja ned des gleiche)
+/TODO: irgendwie nen bspw Bild dafür machen, vermutlich aus Programm rausscreenshoten
 
 #####  *Implementation remarks*
 1. The motion vectors used in this effect are gotten from the *_CameraMotionVectorsTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.MotionVectors* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the motion vector corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The movement in the x-direction is given by the value of the red channel, the movement in the y-direction is given by the value of the green channel. The values range from $-1$ to $1$. Because the values tend to be very close to $0$ (not a lot of movement for each pixel), they are scaled by $\frac{1}{Time.deltaTime}$.
@@ -589,14 +592,13 @@ The pictures below show the effects of the above described linear filters using 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-/TODO bei motion filed "moved" erklären
 ### Motion Field
 The *motion field* of a frame is a vector field where each vector captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. Here scene refers to the virtual world which the participant can explore. <br />
 In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand some of the basics on how Unity renders a 3D scene on a 2D screen; so how (parts of) a *computer graphics pipeline* (aka *rendering pipeline*) works. 
 
 /TODO: erklären was rendern heißt?
 
-Unity's built-in render pipeline (which this project uses) uses *forward rendering*. This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections. /TODO ray tracing? 
+Unity's built-in render pipeline (which this project uses) uses *forward rendering*. This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections.
 
 #### *Forward rendering*
 A scene (here: the virtual world) contains multiple objects (most of the time), for example a tree, a house or a treehouse. Each of these objects is defined by a set of *vertices*, which get connected via edges into *triangles*. Those triangles can have a color or a texture on them, which makes the objects look like they are supposed to (e.g. a green tree or a brick house). <br />
@@ -657,17 +659,17 @@ In order to be more efficient a vertex is not first transformed with one matrix,
 
 After every vertex's coordinates got transformed from their corresponding local coordinate system into the world coordinate system, they get transformed in the *camera coordinate system*; this transformation is called *view transformation*. <br />
 The camera coordinate system is a coordinate system where the participants virtual camera/eyes is position at the coordinate systems origin and is looking down the negative z-axis. The participants virtual camera is defined by
-1. The camera's location in world coordinates $e$
-2. The camera's viewing direction $v$
-3. The camera's up direction $u$
-4. The camera's right direction $r$
-5. $v$, $u$, $r$ are orthonormal
+1. The camera's location in world coordinates $\vec{e}$
+2. The camera's viewing direction $\vec{v}$
+3. The camera's up direction $\vec{u}$
+4. The camera's right direction $\vec{r}$
+5. $\vec{v}$, $\vec{u}$, $\vec{r}$ are orthonormal
 
 A *standard camera* (i.e. a camera that is positioned at the world coordinate system origin and looks down the negative z-axis; which is what we want) is defined as
-1. $e = (0,0,0)$
-2. $v = (0,0,-1)$
-3. $u = (0,1,0)$
-4. $r = (1,0,0)$
+1. $\vec{e} = (0,0,0)$
+2. $\vec{v} = (0,0,-1)$
+3. $\vec{u} = (0,1,0)$
+4. $\vec{r} = (1,0,0)$
 
 Converting the standard camera's coordinate system into the participants camera's coordinate system  can be realized by the following matrix
 ```math 
@@ -678,7 +680,7 @@ Converting the standard camera's coordinate system into the participants camera'
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-It is easy to see that this matrix does nothing more than projecting the unit vector in x-direction onto the $r$-vector of the participants camera, the unit vector in y_direction onto the $u$-vector of the participants camera, the unit vector in z_direction onto the $v$-vector of the participants camera and moves the standard camera's origin to the origin of the participants camera $e$. <br />
+It is easy to see that this matrix does nothing more than projecting the unit vector in x-direction onto the $\vec{r}$-vector of the participants camera, the unit vector in y_direction onto the $\vec{u}$-vector of the participants camera, the unit vector in z_direction onto the $\vec{v}$-vector of the participants camera and moves the standard camera's origin to the origin of the participants camera $\vec{e}$. <br />
 This matrix therefore does the opposite of what is needed, it transforms the standard camera's coordinate system into the participants camera's coordinate system. Thus the opposite operation (transforming the participants camera's coordinate system into the standard camera's coordinate system) can be realized by
 ```math 
 \begin{bmatrix}
@@ -701,11 +703,11 @@ This matrix therefore does the opposite of what is needed, it transforms the sta
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-This matrix is called *view matrix V*. Every vertex $v$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $v'=  V \cdot M \cdot v$ (where $v$ and $v'$ are $4 \times 1$ column vectors). Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
+This matrix is called *view matrix V*. Every vertex $\vec{v}$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $\vec{v'}=  V \cdot M \cdot \vec{v}$ (where $\vec{v}$ and $\vec{v'}$ are $4 \times 1$ column vectors). Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
 
 /TODO: Bidler für camera stuuf? Siehe botsch VL
 
-The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). /TODO: hier vllt cube anders definierne , weil 4d und ned 3d; vllt aber au in text zu homogenen koordinaten sagen,d ass die letzte immer dazu gedacht wird wenn notwenidg oder so <br />
+The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). <br />
 In order to transform the camera coordinates into normalized device coordinates, the camera's viewing volume (the *frustum*) first has to be mapped into the unit cube. This *frustum* is defined by
 1. the camera's *near* and *far* clipping planes
 2. how far the camera sees to the *left* and the *right* sides
@@ -729,19 +731,19 @@ This matrix is called the *projection matrix P*. For every vertex and each frame
 Wahrscheinclich schon erklären, dann mach auch perspective divison sinn -> man sieht halt das z in w drin is und dadurhc perspektive rein kommt
 
 After this projection the coordinates are, however, not yet in normalized device coordinates. Instead they are given in *clip space coordinates*; hence why this coordinate space is referred to as *clip space*. <br />
-Given the coordinates of a vertex $v'$, its clip space coordinates range from $-w'$ to $w'$ where $w'$ refers to the fourth coordinate of $v'$. More precisely $v'$ is given as
+Given the coordinates of a vertex $\vec{v'}$, its clip space coordinates range from $-w'$ to $w'$ where $w'$ refers to the fourth coordinate of $v'$. More precisely $\vec{v'}$ is given as
 ```math 
-v' = \begin{bmatrix}
+\vec{v'} = \begin{bmatrix}
 	w' \cdot x' \\
 	w' \cdot y' \\
 	w' \cdot z' \\
 	w'
 \end{bmatrix} 
 ```
-where $w' \not= 0$, because $v'$ is a point and not a vector. <br />
+where $w' \not= 0$, because $\vec{v'}$ is a point and not a vector. <br />
 In order to transform those coordinates into normalized device coordinates, there is not more to do than dividing every coordinate by $w'$ (this is referred to as *perspective division* or *homogenization*). Doing this with every vertex then truly maps the frustum into the unit cube. It should be noted that there will be (a lot of) vertices for which it does not hold that their coordinates are between $-w'$ and $w'$ or $-1$ to $1$ after perceptive division. Those vertices are the ones outside the frustum given by the virtual camera; the ones the virtual camera cannot see. The implications of this will be acknowledged later.
 
-So, for every vertex $v$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied from the left by $P \cdot V \cdot M$; thus $v' = P \cdot V \cdot M \cdot v$. And afterwards has to be normalized by $w'$.
+So, for every vertex $\vec{v}$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied from the left by $P \cdot V \cdot M$; thus $\vec{v'} = P \cdot V \cdot M \cdot \vec{v}$. And afterwards has to be normalized by $w'$.
 
 Now every vertex is in normalized screen coordinates that range from $-1$ to $1$ (like mentioned above this range is not true for every vertex, but what happens here with those vertices shall not matter as they will be ignored later anyway). As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
 * $l$ determines where on the left side of the monitor the image should start (i.e. how much room should be on the left side of the monitor screen); e.g. $l=0$ means the image starts at left border of the monitor screen
@@ -758,7 +760,7 @@ This transformation is simply done by using the following matrix
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-/TODO: matrix erklären? Den Teil überhaupt erwähnen? Für motion vectoren eigentlich egal, aber ohne is es irgendwie unvollständig
+/TODO: matrix erklären? 
 
 After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles (*primitive assembly*), it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. Thus what is now left is a set of *primitives* (here: triangles) in window/pixel coordinates. <br />
 Not all those primitives are, however, within the coordinate range of the screen. Some might not be in there at all, some might only partially be in there. This is, as mentioned earlier, due to not every vertex being in the view field of the virtual camera. All the parts that are not within the viewport range are now being *clipped*; hence why this step is called *clipping*. If only parts of a primitive got clipped in this step, the remains will get connected back into new triangles/new primitives. 
@@ -820,47 +822,47 @@ Onto the actual calculation of the motion vectors.
 
 Each vertex gets passed into the vertex shader. In here the current clip space position of the vertex gets calculated. This done by using the corresponding matrices, like so
 ```math 
-v' = P \cdot V \cdot M \cdot v
+\vec{v'} = P \cdot V \cdot M \cdot \vec{v}
 ```
-where $v$ refers to the 4D local coordinates of the vertex of the current frame. This is the same as the output of the vertex shader. However, because of the rasterization step, this data would be "lost" (i.e. not available in the fragment shader) if it is not set as additional data for the output of the vertex shader. <br />
+where $\vec{v}$ refers to the 4D local coordinates of the vertex of the current frame. This is the same as the output of the vertex shader. However, because of the rasterization step, this data would be "lost" (i.e. not available in the fragment shader) if it is not set as additional data for the output of the vertex shader. <br />
 Inside the vertex shader the previous clip space potion of the vertex will be calculated as well. This is again done by using the corresponding matrices
 ```math 
-v'_{prev} = P_{prev} \cdot V_{prev} \cdot M_{prev} \cdot v
+\vec{v'_{prev}} = P_{prev} \cdot V_{prev} \cdot M_{prev} \cdot \vec{v}
 ```
-Here it is necessary to distinguished between two cases to get the meaning of $v$. If the vertex did not move inside its local coordinate system (not the global one!) from the previous frame to the current frame, then $v$ is simply defined as the 4D local coordinates of the vertex of the current frame. If however the vertex moved inside the local coordinate system from the previous frame to the current frame, $v$ is defined as the 4D coordinates of the vertex of the previous frame (so its previous potions within the local coordinate system). $v'_{prev}$ will also be part of the vertex shader output. <br />
+Here it is necessary to distinguished between two cases to get the meaning of $\vec{v}$. If the vertex did not move inside its local coordinate system (not the global one!) from the previous frame to the current frame, then $\vec{v}$ is simply defined as the 4D local coordinates of the vertex of the current frame. If however the vertex moved inside the local coordinate system from the previous frame to the current frame, $\vec{v}$ is defined as the 4D coordinates of the vertex of the previous frame (so its previous potions within the local coordinate system). $\vec{v'_{prev}}$ will also be part of the vertex shader output. <br />
 In conclusion the output of the vertex shader will contain the current positon of the vertex in clip space coordinates as well as the previous poisiton of the vertex in clip space coordinates.
 
 After the vertex shader, rasterization happens. Each fragment that comes out of this step will contains information about its current position in clip space coordinates and its previous potion in clip space coordinates. As explained above those coordinates might have been obtained via interpolation. Every fragment now gets passed into the fragment shader <br />
 Inside the fragment shader the current and the previous normalized device coordinates are being calculated. This is simply done by diving each coordinate through the corresponding $w$ coordinate.
 ```math 
-v'' = \frac{v'.xyz}{v'.w} 
+\vec{v''} = \frac{\vec{v'}.xyz}{\vec{v'}.w} 
 ```
 ```math 
-v''_{prev} = \frac{v'_{prev}.xyz}{v'_{prev}.w}
+\vec{v''_{prev}} = \frac{\vec{v'_{prev}}.xyz}{\vec{v'_{prev}}.w}
 ```
 
-$v''$ and $v''_{prev}$ are now both normalized device coordinates in a range from $-1$ to $1$. In order to handle them better they now get scaled into a the viewport range of $0$ to $1$.
+$\vec{v''}$ and $\vec{v''_{prev}}$ are now both normalized device coordinates in a range from $-1$ to $1$. In order to handle them better they now get scaled into a the viewport range of $0$ to $1$.
 ```math 
-v_{pos} =\frac{v'' +1}{2} 
+\vec{v_{pos}} =\frac{\vec{v''} +1}{2} 
 ```
 ```math 
-v_{prevPos} =\frac{v''_{prev} +1}{2}
+\vec{v_{prevPos}} =\frac{\vec{v''_{prev}} +1}{2}
 ```
 
-Those coordinates are all that is needed to calculate the motion vector for the current fragment. By just looking at all the explanation above, it might be hard to understand why this is the case. So, to put it simply, just look at what $v_{pos}$ and $v_{prevPos}$ stand for. <br />
-$v_{pos}$ describes the position of a fragment (a pixel) within the *viewport space*. This space simple defines a square with the lower left coordinate of $(0,0)$ and the upper right coordinate $(1,1)$. So it is basically like the final window space (that can have the height and width of the monitor), but normalized. Thus $v_{pos}$ simply defines where the currently looked at fragment is positioned within this square in the current frame. <br />
-Similarly, $v_{prevPos}$ defines where the currently looked at fragment has been positioned within this square in the previous frame.
+Those coordinates are all that is needed to calculate the motion vector for the current fragment. By just looking at all the explanation above, it might be hard to understand why this is the case. So, to put it simply, just look at what $\vec{v_{pos}}$ and $\vec{v_{prevPos}}$ stand for. <br />
+$\vec{v_{pos}}$ describes the position of a fragment (a pixel) within the *viewport space*. This space simple defines a square with the lower left coordinate of $(0,0)$ and the upper right coordinate $(1,1)$. So it is basically like the final window space (that can have the height and width of the monitor), but normalized. Thus $\vec{v_{pos}}$ simply defines where the currently looked at fragment is positioned within this square in the current frame. <br />
+Similarly, $\vec{v_{prevPos}}$ defines where the currently looked at fragment has been positioned within this square in the previous frame.
 
-So, quite frankly speaking, $v_{pos}$ and $v_{prevPos}$ tells us where a pixel was in the previous frame and where it is in this frame. (Note: The pixel on the screen however never really move, their colors just change. But for simplicity reasons just say they move when in reality the color simply gets displayed by a different pixel and it is more of a color moving than a pixel moving.)
+So, quite frankly speaking, $\vec{v_{pos}}$ and $\vec{v_{prevPos}}$ tells us where a pixel was in the previous frame and where it is in this frame. (Note: The pixel on the screen however never really move, their colors just change. But for simplicity reasons just say they move when in reality the color simply gets displayed by a different pixel and it is more of a color moving than a pixel moving.)
 
 /TODO: bild von den ganzen kack spaces einfügen, gugn wie des mit dem movemnt besser erklärt werden kann (wahreschinlich aber nur in arbeit und end hier)
 
 In order to now obtain the motion vector within the fragment shader, there is not mucch more left to do than simply subtract the previous position from the current position
 ```math 
-m = v_{pos} - v_{prevPos} 
+\vec{m} = \vec{v_{pos}} - \vec{v_{prevPos}} 
 ```
 
-So, finally, we have $m$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  a texture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
+So, finally, we have $\vec{m}$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  a texture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -922,9 +924,6 @@ With this algorithm it is now possible to map the motion vector of a fragment to
 
 /TODO bio stuff ggf, da kann man dann vllt au sagenwas für info überhaupt eichtig (richtigung, stärke9 und es dann als überleitung zu was man darasteleln will mit frarben oder so
 
-/TODO vllt erwähnen das in frgament shader image filter zeug passiert. vllt des au oben irgendwie erwähnen (zumindest ina rbeit sollte es da sein)
-
-
 ### Depth
 As the name suggests this effect visualizes the depth of the 3D scene on the 2D screen. So it shows which objects are closer to the participant's virtual camera/eyes and which are further away from the participant's virtual camera/eyes. This means for each pixel on the screen we need to know how far the corresponding object-point is away from the camera in the scene; hence we need the $z$-coordinate for each pixel on the screen.
 
@@ -940,9 +939,6 @@ where $color$ stand for the final RGBA value of the fragment, $(255,255,255,1)$ 
 #####  *Implementation remarks*
 1. The depth values used in this effect are gotten from the *__CameraDepthTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.Depth* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the depth value corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The values range from $0$ (closest to the camera) to $1$ (furthest away from the camera). Thye are non-linearly distributed in this texture, but are mapped to a linear distribution via Unity's *Linear01Depth* function.
 2. If you select the *Depth* shader option in the *ControlShader* script you can get the additional option to change the color for the closest and farthest away objects. The default for closest is $(255,255,255,1)$ (white), the default for furthest is $(0,0,0,1)$ (black).
-
-
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
