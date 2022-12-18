@@ -6,7 +6,7 @@ ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Die
 <a name="readme-top"></a>
 <h1 align="center">visu-tools</h1>
 <p align="center">
-Unity package that allows you to apply full screen post-processing effects to your project in real time. Also includes the option to record and later replay your movement.
+Unity package that allows you to apply full screen post-processing effects to your project in real time. Also includes the option to record and later replay your movement. As well as export the motion vectors texture and the depth texture to pngs.
 </p>
 </div>
 
@@ -56,6 +56,7 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <li><a href="#calculating-motion-vectors">Calculating motion vectors</a></li>	
 <li><a href="#displaying-motion-vectors">Displaying motion vectors</a></li>	
 </ul>	
+<li><a href="#depth">Depth</a>
 </li>
 </ul>
 <li><a href="#license">License</a></li>
@@ -912,6 +913,9 @@ With this algorithm it is now possible to map the motion vector of a fragment to
 #####  *Implementation remarks*
 1. Because the fragment shader always has to give back a color in RGB $[0,1]$ color space, the HSV value will get remapped into that color space before being returned.
 2. Because of floating point errors the value put into the $acos$ function will get clamped between $-1$ and $1$, so the input values for the arcus cosine are always legal. 
+3. The motion vectors used in this effect are gotten from the *_CameraMotionVectorsTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.MotionVectors* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the motion vector corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The movement in the x-direction is given by the value of the red channel, the movement in the y-direction is given by the value of the green channel. The values range from $-1$ to $1$. Because the values tend to be very close to $0$ (not a lot of movement for each pixel), they are scaled by $\frac{1}{Time.deltaTime}$.
+4. If you select the *Motion Field* shader option in the *ControlShader* script you can get the additional option to change the scale of the motion field. This value scales each motion vector; hence the bigger this value, the stronger the effect. The minimum value is $1$, the maximum value is $10$ and the default value is $1$.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -922,8 +926,23 @@ With this algorithm it is now possible to map the motion vector of a fragment to
 
 
 ### Depth
+As the name suggests this effect visualizes the depth of the 3D scene on the 2D screen. So it shows which objects are closer to the participant's virtual camera/eyes and which are further away from the participant's virtual camera/eyes. This means for each pixel on the screen we need to know how far the corresponding object-point is away from the camera in the scene; hence we need the $z$-coordinate for each pixel on the screen.
 
-/TODO
+In the section <a href="#forward-rendering">Forward rendering</a> it has already been discussed how an object is transformed and projected from 3D space to 2D space and how the screen pixel/fragments correspond to the object. <br />
+During the projection from camera coordinates into clip space coordinates it was said that the $z$-component will still be projected as well. So, although the final product is in 2D space, the depth information is always kept. And, as explained for the visibility test near the end of that section, the $z$-values will be written into the *z-buffer* (aka *depth buffer*). So for each fragment/pixel it is still known how far away the corresponding 3D point is from the participant's virtual camera/eyes.
+
+Knowing the depth value for every fragment makes it fairly easy to display the depth on the screen. In the fragment shader the color for each pixel is simply determined by its corresponding depth value (which we know). Say objects closest to the participant's virtual camera/eyes should be white and objects  furthers away from the participant's virtual camera/eyes should be black, then the color of each fragment is just being obtained via linear interpolation dependent on the depth value. Thus
+```math  
+color = lerp[(255,255,255,1), (0,0,0,1) , depth] = (255,255,255,1) + depth \cdot [(0,0,0,1) - (255,255,255,1)]
+```
+where $color$ stand for the final RGBA value of the fragment, $(255,255,255,1)$ is a fully visible white, $(0,0,0,1)$ is a fully visible black and $depth$ is the fragment's depth value. 
+
+#####  *Implementation remarks*
+1. The depth values used in this effect are gotten from the *__CameraDepthTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.Depth* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the depth value corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The values range from $0$ (closest to the camera) to $1$ (furthest away from the camera). Thye are non-linearly distributed in this texture, but are mapped to a linear distribution via Unity's *Linear01Depth* function.
+2. If you select the *Depth* shader option in the *ControlShader* script you can get the additional option to change the color for the closest and farthest away objects. The default for closest is $(255,255,255,1)$ (white), the default for furthest is $(0,0,0,1)$ (black).
+
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
