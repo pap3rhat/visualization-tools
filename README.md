@@ -1,4 +1,4 @@
-ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand. Diese Read me ist nahezu fertig. Es gibt noch ien paar TODOs in ihr, aber die sind hauptäschlich für mich als Erinnerung. Manaches davon wird auch gar nicht mehr in die Readme kommen, sondern nur in die Arebit selbst. Generell können und sollten die TODOs einfach ignoriert werden.
+ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand.
 
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com) 
 <br />
@@ -69,17 +69,12 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This repository contains the code for my bachelors thesis at University of Bielefeld in the winter semester 22/23. <br />
+This repository contains the code for my bachelor's thesis at University of Bielefeld in the winter semester 22/23. <br />
 The topic is: *"Entwicklung von Visualisierungswerkzeugen zur Auswertung von VR-Navigationsexperimenten beim Menschen"*(Development of visualization tools that can be used to evaluate vr-navigation-experiments performed by humans).
 
 More precisely the task was to find ways of visualizing "meta-data" that humans might use when navigating through a VR-world. This "meta-data" includes things such as how the environment moves in respect to oneself or how sharp/blurry one perceives parts of the environment. <br />
-The task also included creating a system to replay .CSV files that contain movement (position + orientation) data. In order to always have access to such files this project also contains recorder. <br />
+The task also included creating a system to replay .CSV files that contain movement (position + orientation) data. In order to always have access to such files this project also contains a recorder. <br />
 Furthermore this project contains a function to save the motion vectors texture and the depth texture as images (.png). This is useful for analyzing the individual vectors for every frame.
-
-*Why is it relevant to be able to have such tools?*
-\TODO
-
-<br />
 
 The VR-experiments are designed and performed with Unity, thus all the evaluation tools are also made with Unity. 
 
@@ -153,15 +148,14 @@ On the top right there are a few replay management buttons you can use (some mig
 * *PAUSE*: Pauses the replay.
 * *RESUME*: Resumes the replay.
 * *STOP*: Stops the replay.
+
 While the replay is playing you can try using different visualization effects as described here: <a href="#test-world">Test world</a>. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-/TODO: Bilder ?
-
 
 ### Visu-tools package
-The package contains a view different folders filled with scripts, materials and other information in order to make everything work. Feel free to go through it and, if necessary, modify it for your needs.
+The package contains a view different folders filled with scripts, materials and other information in order to make everything work. Feel free to go through it and, if necessary, modify it to your needs.
 
 #### *Visualization effects function*
 In the following the different parts contributing to the visualization effects function will be listed. 
@@ -229,9 +223,9 @@ For the **basic usage** the *TextureGrabber* file has to be used as follows. <br
 
 **Important additions**: 
 * The images get saved to *Application.persistentDataPath/DepthGrab* and *Application.persistentDataPath/MotionGrab* if no path is provided in the *File Path* slot in the inspector. Otherwise the get saved to *File Path/DepthGrab* and *File Path/MotionGrab*.
-* For images the show the depth texture the nameing convention is as follows: *depth_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. For images the show the motion vectors texture the naming convention is as follows: *motion_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. <br /> In the case the xr is not active *cam.stereoActiveEye.ToString().ToLower()* resolves to *mono*. In the case that xr is active and multi pass is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left* or *right*; so two images are saved for very frame (one for each eye). In the case that xr is active and single pass instanced is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left*; so only the image for the left eye is saved for every frame (because single pass instanced rendering is weird...).
+* For images that show the depth texture the naming convention is as follows: *depth_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. For images the show the motion vectors texture the naming convention is as follows: *motion_cam.stereoActiveEye.ToString().ToLower()_Time.frameCount_Time.delta_Time*. <br /> In the case the xr is not active *cam.stereoActiveEye.ToString().ToLower()* resolves to *mono*. In the case that xr is active and multi pass is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left* or *right*; so two images are saved for very frame (one for each eye). In the case that xr is active and single pass instanced is being used *cam.stereoActiveEye.ToString().ToLower()* resolves to *left*; so only the image for the left eye is saved for every frame (because single pass instanced rendering is weird...).
 * In the motion vectors images the red channel contains the movement in x-direction and the green channel contains the movement in the y-direction. The original rendertexture values can range from $-1$ to $1$. Both values have been divided by *Time.delta_Time*, so they are not nearly $0$; for reconstructing purposes of the original values *Time.delta_Time* is contained in the file name. If the image contains another value range ($0-255$) and it is important for you to have the original range, you have to scale it back into the original range.
-* In the depth texture images each color channel contains the same value. The original rendertexture values can range from $0$ to $1$ and are distributed linearly. $0$ represents the near plane, $1$ the far plane. If the image contains another value range ($0-255$) and it is important for you to have the original range, you have to scale it back into the original range.
+* In the depth texture images each color channel contains the same value. The original rendertexture values can range from $0$ to $1$ and are distributed linearly. $0$ represents the near plane, $1$ the far plane. If the image contains another value range ( $0-255$ ) and it is important for you to have the original range, you have to scale it back into the original range.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -240,14 +234,14 @@ For the **basic usage** the *TextureGrabber* file has to be used as follows. <br
 ## Technical background
 
 This section tries to (at least partially) explain how the different visualization tools work in theory. It will also cover some of the implementation details and things to be aware of when using the *visu-tool package* in your own project.
-/TODO au bio stuff in read me? is eigentlich scho zu lang für ne read me und ghehört au ned wirklich zum technischne zeug dazu, also propbably ned
+
+**Warning:** The following explanation does not go too deep into the discussed subjects. If you need further information and explanations, you might want to check out the book "Real-Time Rendering Fourth Edition" by Tomas Akenine-Möller (or read my bachelor's thesis if you have access ^^).
 
 ### Interlude
-Before thinking about how an *individual* visualization tool works, one has to think about how they work *in general*. As explained here <a href="#about-the-project">About The Project</a>, the purpose of the visualization tools is to extract some kind of "meta data" from what a participant perceives during a VR-navigation-experiment. Broadly speaking, what they perceive is a rapid sequence of frames, where each frame itself can be interpreted as an image. This image shows part of the virtual world as seen through the virtual eyes/virtual camera of the participant. As the participant moves those eyes/this camera the image will change as it shows a different part of the virtual world. Because the changing of frames is happening at a very high speed (for example 400 frames per second) the participant cannot distinguish between the different frames and instead perceives it as a continuous stream of information that simulates movement. <br />
+Before thinking about how an *individual* visualization tool works, one has to think about how they work *in general*. As explained <a href="#about-the-project">here</a>, the purpose of the visualization tools is to extract some kind of "meta data" from what a participant perceives during a VR-navigation-experiment. Broadly speaking, what they perceive is a rapid sequence of frames, where each frame itself can be interpreted as an image. This image shows part of the virtual world as seen through the virtual eyes/virtual camera of the participant. As the participant moves those eyes/this camera the image will change as it shows a different part of the virtual world. Because the changing of frames is happening at a very high speed (for example 400 frames per second) the participant cannot distinguish between the different frames and instead perceives it as a continuous stream of information that simulates movement. <br />
 In order to now visualize the "meta data" in this stream, one starts by simply saving the movement information (position + rotation at a frame x) of the participant and replaying it with the same frame-rate as the participant experienced. This replay is what will now be manipulated. More precisely, each frame will be seen as an image on which an image-processing effect will be applied before it gets shown. In Unity this is done by using post-processing shaders that effect the final render image output of the camera by changing every pixel color within a fragment shader. <br />
 So, essentially, one has to understand what an image is in this context and how it can be manipulated. As well as, how we even obtain such an image. The first part will be explain below, the latter will be explained in the section <a href="#motion-field">Motion field</a>.
 
-/TODO in Arbeit heir irgendwie die Reihenfolge drehen. Erst rendering pipeline, dann image, dann Effekte (oder so ähnlich)
 
 #### *What is an image*
 In this context an image is one single frame that is contained within a $M \times N  \times 3$ dimensional matrix where $M$ is the height of the frame and $N$ is the width of the frame. The $3$ represents the three different RGB-color channels which contain a value form 0 to 255 (or 0 to 1 in Unity; keyword: normalization). So, for example, the value at $(j,k,0) \in M \times N \times 3$ represents the red color value of the pixel at height $j$ and width $k$. <br />
@@ -270,21 +264,12 @@ This concept transfers to colored images by either simply calculating the corres
 Of course an image does not have to have the same rate of change for every row/column, it does not even have to have the same rate of change throughout a row/column. This makes it hard to figure out what frequencies an image contains by just looking at it. But there is a neat thing called *discrete Fourier-transformation* that allows us to transform an image from the image space it is in, into a frequency space. The frequency space then can show us how many low and or high frequencies the image contains. It also can show how the frequencies are positioned inside the image (are the just horizontal or vertical or do they have specific angles?). Generally the low frequencies in an image can be found in homogeneous region (e.g. a clear sky, a read wall of a house) and the high frequencies can be found where edges are positioned. So, if for example the image contains a vertical edge, the corresponding frequency space would show that to us. <br />
 The exact way of how to do a discrete Fourier-transformation and why it does what it does, would be more confusing then anything else. The only important thing to take away from this paragraph is that an image contains frequencies that are dependent on the image pixel values. It is possible to transform an image into its frequency space and, of course, back again. One last thing to note here: If we would apply changes to the image in the frequency space and then transform it back into image space, the changes we made would effect the image we see. So, if for example, in the frequency space we cut off some of the high frequencies the image in image space would contain less sharp edges; they would be blurry.
 
-
-/TODO: Bild wie in frequenzraum transformiert aussieht, gernell bilder
-/TODO: fourier vllt in appendix erklären
-/TODO: vllt besser erklären
-
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Linear filters
 Linear filters are image pre-processing effects in which the final value of a pixel is given by a linear combination of the value of the pixel itself and of the values of the pixel in its neighborhood $W$. <br />
 This calculation is realized by *convolution*. During convolution a small, square matrix with an odd height/width (e.g. $5 \times 5$, $9 \times 9$,...), a so called *kernel*, is  slid over the image matrix. Every entry of this kernel represents a weight *w_i* with which the value of the image pixel underneath the kernel gets multiplied. After every image pixel value underneath the kernel got multiplied with the corresponding weight, those values get summed up. This sum is now the final value of the image pixel that is positioned underneath the kernels middle. <br />
 When dealing with colored images, this process is separately done for every color channel. So the final red/green/blue value of every pixel is determined independently of the other two colors. 
-
-/TODO Bild für conv erklärung einfügen?
 
 
 #### *Gaussian blur*
@@ -304,8 +289,6 @@ As the size of such an averaging kernel increases, the neighborhood $W$ increase
 However, using such an averaging kernel lets the final image appear a bit "boxy"; hence why a low-pass filter that is implemented in such a fashion is referred to as *Box blur*. <br />
 The effect of this filter can be seen here: <a href="#example-images">Example images</a> 
 
-/TODO evtl doch Fourier ansprechen, damit box mittels transformation in frquenzbereich erklärt werden kann? Zu komplex?
-
 In order to have less of a "boxy" look to the final image, the above kernel can slightly be adjusted. Instead of giving each pixel in $W$ the same weight, the weight will be dependent on the distance of each pixel $(j,k) \in W$ to the middle pixel in $W$. The further away a pixel, the smaller its weight. So a $3 \times 3$ kernel might look like this:
 ```math
 \frac{1}{16} \cdot \begin{bmatrix}
@@ -319,8 +302,6 @@ More elaborately, the weights $w_i$ are given by the product of two discrete Gau
 G(x,y) = \frac{1}{2 \pi \sigma ^2} \exp ^{-\frac{x^2 + y^2}{2 \sigma ^2}}
 ```
 Here $x$ is the distance of the currently looked at pixel from the center pixel on the horizontal axis, $y$ is this distance on the vertical axis and $\sigma$ is the standard deviation of the Gaussian distribution. <br />
-
-/TODO vllt mehr erklären warum Einfach produkt (seperierbarkeit!)
 
 This can further be simplified, because the discrete Gaussian function can be approximated by the binomial distribution. So in order to get the correct kernel weights it is enough to simply look at Pascals triangle. <br />
 Each row in Pascals triangle can be interpreted as a one-dimensional kernel that weights the pixel closer to the center more that those farther away. For example the second row (counting starts at $0$!) would yield the following kernel
@@ -362,9 +343,6 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 1. For efficiency reasons the separability of the kernel is being used. In the first shader pass a horizontal Gaussian blur is applied to the image, this gets saved as an intermediate result. On this intermediate result a vertical Gaussian blur is applied, resulting in a final output-image that is blurred horizontally and vertically.
 2. For efficiency reasons the kernel weights are determined a little differently than described above. For example if the kernel is supposed to have dimensions $5 \times 5$, the $9$-th row of the Pascal triangle is being picked instead of the $5$-th row. Then the two most left and the two most rights values of this row are discarded, leaving the middle $5$ values of the $9$-th row. The reasoning behind this is that otherwise the outermost weights are quite small, so the pixel values underneath them do not contribute a lot to the final result; however, you still have to look up the image pixel value for each of them, which is the costly operation. So designing the kernel with a "higher" row and discarding values leads to bigger weights and thus more blur effect with comparably less pixel value look-up operations. <br />
 Additionally Linear sampling is being used in order to reduce the look-up operations. 
-
-/TODO maybe Linear sampling erklären
-
 3. If you select the *Gaussian blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -412,8 +390,6 @@ The effect of this filter can be seen here: <a href="#example-images">Example im
 #####  *Implementation remarks*
 1. For efficiency reasons the high-pass filter is not implemented using convolution with a high-pass filter kernel. Instead of doing convolution with a high-pass filter kernel, convolution is done with a low-pass filter kernel (the implementation is the same efficient implementation as mentioned above in the <a href="#gaussian-blur">Gaussian blur</a> section). The result of this convolution is saved as an intermediate result. Afterwards, in the high-pass filter shader pass, for every pixel the final color is calculate. This is done be simply subtracting the color of the low-pass filtered intermediate result from the original color. Trivially, this is the same as doing a convolution with a high-pass filter kernel.
 3. If you select the *High-pass* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
-
-/TODO ggf bio stuff
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -509,8 +485,6 @@ Thus using this unnormalized(!) vector in determining $W$ leads to the individua
 2. If you select the *Radial Blur* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
 3. If you select the *Radial Blur* shader option in the *ControlShader* script you can get the additional option to change the scale of the radial blur. This value scales the vector between each pixel and the origin of the blur; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
 
-/TODO: ggf bio stuff
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -580,8 +554,6 @@ As the distance between each image pixel $(j,k)$ and the origin of the blur grow
 2. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the origin of the blur on the horizontal and on the vertical axis. Both values range from $0$ to $1$, $(0,0)$ representing the bottom left corner and $(1,1)$ representing the top right corner. The default is $(0.5, 0.5)$. If you are using xr this origin can be determined for each eye independently.
 3. If you select the *Radial Blur Desat* shader option in the *ControlShader* script you can get the additional option to change the scale of the radial blur. This value scales the vector between each pixel and the origin of the blur; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
 
-/TODO: ggf bio stuff
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -593,14 +565,10 @@ This definition of the "smoothing axis" leads to the following observation: The 
 
 In a vr-navigation-experiment the direction of each motion vector is dependent on the direction in which the participant moves their virtual eyes/camera. For example, if the participant moves their virtual eyes/camera to the right, the motion vectors will point to the left. So for each pixel the blur would be done with the horizontal axis as the "smoothing axis".
 
-/TODO: irgendwie nen bspw Bild dafür machen, vermutlich aus Programm rausscreenshoten
-
 #####  *Implementation remarks*
-1. The motion vectors used in this effect are gotten from the *_CameraMotionVectorsTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.MotionVectors* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the motion vector corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The movement in the x-direction is given by the value of the red channel, the movement in the y-direction is given by the value of the green channel. The values range from $-1$ to $1$. Because the values tend to be very close to $0$ (not a lot of movement for each pixel), they are scaled by $\frac{1}{Time.deltaTime}$.
+1. The motion vectors used in this effect are gotten from the *_CameraMotionVectorsTexture* that is provided by Unity (in order for Unity to provide this texture *DepthTextureMode.MotionVectors* has to be activated on the camera where the effect should be applied to). Each pixel in the texture contains the motion vector corresponding to each pixel in *_MainTex* (i.e. here: the texture that contains the color for each pixel in the current frame). The movement in the x-direction is given by the value of the red channel, the movement in the y-direction is given by the value of the green channel. The values range from $-1$ to $1$. Because the values tend to be very close to $0$ (not a lot of movement for each pixel), they are scaled by $\frac{1}{Time.deltaTime}$; this also makes them frame-rate independent.
 2. If you select the *Motion blur* shader option in the *ControlShader* script you can get the additional option to change the kernel size. The bigger this value, the stronger the effect. The minimum value is $5$, the maximum value is $127$ and the default value is $9$. Only odd values change the effect. Only integer values are possible.
 3. If you select the *Motion blur* shader option in the *ControlShader* script you can get the additional option to change the scale of the motion blur. This value scales each motion; hence the bigger this value, the stronger the effect. The minimum value is $0$, the maximum value is $10$ and the default value is $5$.
-
-/TODO: ggf bio stuff
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -612,10 +580,7 @@ The pictures below show the effects of the above described linear filters using 
 
 ### Motion Field
 The *motion field* of a frame is a vector field where each vector captures the per-pixel, screen-space motion of the scenes' objects from one frame to the next. Here scene refers to the virtual world which the participant can explore. <br />
-In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand some of the basics on how Unity renders a 3D scene on a 2D screen; so how (parts of) a *computer graphics pipeline* (aka *rendering pipeline*) works. 
-
-/TODO: erklären was rendern heißt?
-
+In order to have a better understanding about what this exactly means and how the motion field can be calculated, it is important to understand some of the basics on how Unity renders a 3D scene on a 2D screen; so how (parts of) a *computer graphics pipeline* (aka *rendering pipeline*) works.  <br />
 Unity's built-in render pipeline (which this project uses) uses *forward rendering*. This means that the 3D objects contained within a scene get projected onto the 2D image plane. Doing so needs a few transformations and projections.
 
 #### *Forward rendering*
@@ -623,9 +588,8 @@ A scene (here: the virtual world) contains multiple objects (most of the time), 
 The definition of those vertices happens within a *local coordinate system* (aka *object coordinate system*, aka *model coordinate system*). So each object is defined within its own coordinate system. <br />
 The scene itself is ankered within a *world coordinate system*.  
 
-The first step of forward rendering is to transform each objects vertices local coordinates into coordinates in the world coordinate system; this is called *model transformation*. In order to to transform a single vertex's local coordinates into the world coordinates they need to be scaled, rotated and translated appropriately.
-/TODO: example Bild? <br />
-For this to be efficient, matrices are being used to perform those operations. Because the scene is three-dimensional the homogeneous matrices are four-dimensional and the vertices local coordinates get adjusted to be four-dimensional as well. /TODO: diese koordinaten definitv erklären, da später für prjoektion sehr wichtig, vllt abe rne dhier sondenr nur in arbeit<br />
+The first step of forward rendering is to transform each objects vertices local coordinates into coordinates in the world coordinate system; this is called *model transformation*. In order to to transform a single vertex's local coordinates into the world coordinates they need to be scaled, rotated and translated appropriately. <br />
+For this to be efficient, matrices are being used to perform those operations. Because the scene is three-dimensional the homogeneous matrices are four-dimensional and the vertices local coordinates get adjusted to be four-dimensional as well. <br />
 The four-dimensional matrix used for scaling a vertex is defined as
 ```math 
 S_{x,y,z} = \begin{bmatrix}
@@ -646,7 +610,7 @@ T_{x,y,z} = \begin{bmatrix}
 \end{bmatrix} 
 ```
 where $t_i$ determines how much the vertex should be translated in $i$-direction. <br />
-The four-dimensional matrices used for rotating a vertex are defined as /TODO: erklären warum drei? Zusammen mit homogne koordinaten?
+The four-dimensional matrices used for rotating a vertex are defined as 
 ```math 
 R_x = \begin{bmatrix}
 	1 & 0 & 0 & 0\\
@@ -669,22 +633,18 @@ R_z = \begin{bmatrix}
 ```
 where $R_i$ determines around which axis the vertex is being rotated and $\alpha_i$ determines with what angle the vertex is being rotated.
 
-/TODO: bspw hier einfügen, dann macht das darunter auch mehr Sinn
-
 In order to be more efficient a vertex is not first transformed with one matrix, then this result is being transformed with another matrix and so on, until the vertex is in world coordinates. Instead the needed matrices are first multiplied together (sequence matters!), the resulting matrix is called *world matrix M*. This *world matrix* is not unique to each vertex, but to each object (so all vertices that make up one object are multiplied with the same world matrix).
 
-/TODO: bspw von oben dann hier weiter eklären, auf reihenfolge eingehen
-
-After every vertex's coordinates got transformed from their corresponding local coordinate system into the world coordinate system, they get transformed in the *camera coordinate system*; this transformation is called *view transformation*. <br />
+After every vertex's coordinates got transformed from their corresponding local coordinate system into the world coordinate system, they get transformed into the *camera coordinate system*; this transformation is called *view transformation*. <br />
 The camera coordinate system is a coordinate system where the participants virtual camera/eyes is position at the coordinate systems origin and is looking down the negative z-axis. The participants virtual camera is defined by
-1. The camera's location in world coordinates $\vec{e}$
+1. The camera's location in world coordinates $e$
 2. The camera's viewing direction $\vec{v}$
 3. The camera's up direction $\vec{u}$
 4. The camera's right direction $\vec{r}$
 5. $\vec{v}$, $\vec{u}$, $\vec{r}$ are orthonormal
 
 A *standard camera* (i.e. a camera that is positioned at the world coordinate system origin and looks down the negative z-axis; which is what we want) is defined as
-1. $\vec{e} = (0,0,0)$
+1. $e = (0,0,0)$
 2. $\vec{v} = (0,0,-1)$
 3. $\vec{u} = (0,1,0)$
 4. $\vec{r} = (1,0,0)$
@@ -698,7 +658,7 @@ Converting the standard camera's coordinate system into the participants camera'
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-It is easy to see that this matrix does nothing more than projecting the unit vector in x-direction onto the $\vec{r}$-vector of the participants camera, the unit vector in y_direction onto the $\vec{u}$-vector of the participants camera, the unit vector in z_direction onto the $\vec{v}$-vector of the participants camera and moves the standard camera's origin to the origin of the participants camera $\vec{e}$. <br />
+It is easy to see that this matrix does nothing more than projecting the unit vector in x-direction onto the $\vec{r}$-vector of the participants camera, the unit vector in y_direction onto the $\vec{u}$-vector of the participants camera, the unit vector in z_direction onto the $\vec{v}$-vector of the participants camera and moves the standard camera's origin to the origin of the participants camera $e$. <br />
 This matrix therefore does the opposite of what is needed, it transforms the standard camera's coordinate system into the participants camera's coordinate system. Thus the opposite operation (transforming the participants camera's coordinate system into the standard camera's coordinate system) can be realized by
 ```math 
 \begin{bmatrix}
@@ -721,17 +681,15 @@ This matrix therefore does the opposite of what is needed, it transforms the sta
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-This matrix is called *view matrix V*. Every vertex $\vec{v}$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $\vec{v'}=  V \cdot M \cdot \vec{v}$ (where $\vec{v}$ and $\vec{v'}$ are $4 \times 1$ column vectors). Now every vertex is given in camera/eye coordinates.  This is the simplest form of coordinates before they get projected from 3D space to 2D space.
+This matrix is called *view matrix V*. Every vertex $v$ gets multiplied by this matrix after it has been multiplied by the world matrix *M*; so $v'=  V \cdot M \cdot v$ (where $v$ and $v'$ are $4 \times 1$ points). Now every vertex is given in camera/eye coordinates. This is the simplest form of coordinates before they get projected from 3D space to 2D space.
 
-/TODO: Bidler für camera stuuf? Siehe botsch VL
 
-The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *normalized device coordinates*. Those coordinates encompass the unit cube $[-1,1]^3$, so the x-, y- and z-coordinates can range between $-1$ and $1$. This is, obviously, still a volume and not 2D. However, the z-coordinates will just be left out in the final image and are not being stored in the image (making it 2D). <br />
-In order to transform the camera coordinates into normalized device coordinates, the camera's viewing volume (the *frustum*) first has to be mapped into the unit cube. This *frustum* is defined by
+The first part of this projection is called *projection transformation*. Here the coordinates (given as *camera/eye coordinates*) get transformed into *clip coordinates*. <br />
+In order to transform the camera coordinates into clip coordinates, the camera's viewing volume (the *frustum*) has to be mapped into the unit cube. This *frustum* is defined by
 1. the camera's *near* and *far* clipping planes
 2. how far the camera sees to the *left* and the *right* sides
 3. how far the camera sees to the *top* and the *bottom*
 
-/TODO: Bild?
 
 Projecting the frustum (*frustum mapping*) is now done with the following matrix
 ```math 
@@ -745,28 +703,27 @@ Projecting the frustum (*frustum mapping*) is now done with the following matrix
 where $n, f, l, r, t, b$ refer to the definition above. <br />
 This matrix is called the *projection matrix P*. For every vertex and each frame the view matrix and the projection matrix are the same; only the world matrix differs. Hence, in order to be efficient $P \cdot V$ only gets calculated once each frame and is being used for every vertex. 
 
-/TODO: erklären warum des funktioniert? Auwand für was des iege egal is für den Rest, aber so is es halt einfach nur ne matrix mit stuff die da is weil sie da is
-Wahrscheinclich schon erklären, dann mach auch perspective divison sinn -> man sieht halt das z in w drin is und dadurhc perspektive rein kommt
+After this projection all coordinates within the *clip space*. In this space the vertices get put together into their original triangles and *clipping* happens. During clipping the triangle parts that are not fully within the view space of the camera get discarded/ignored. Only the visible triangle parts from the camera's perspective get worked on in the next steps.
 
-After this projection the coordinates are, however, not yet in normalized device coordinates. Instead they are given in *clip space coordinates*; hence why this coordinate space is referred to as *clip space*. <br />
-Given the coordinates of a vertex $\vec{v'}$, its clip space coordinates range from $-w'$ to $w'$ where $w'$ refers to the fourth coordinate of $v'$. More precisely $\vec{v'}$ is given as
+Given the coordinates of a vertex $v'$, its clip space coordinates range from $-w'$ to $w'$ where $w'$ refers to the fourth coordinate of $v'$. More precisely $v'$ is given as
 ```math 
-\vec{v'} = \begin{bmatrix}
+v' = \begin{bmatrix}
 	w' \cdot x' \\
 	w' \cdot y' \\
 	w' \cdot z' \\
 	w'
 \end{bmatrix} 
 ```
-where $w' \not= 0$, because $\vec{v'}$ is a point and not a vector. <br />
-In order to transform those coordinates into normalized device coordinates, there is not more to do than dividing every coordinate by $w'$ (this is referred to as *perspective division* or *homogenization*). Doing this with every vertex then truly maps the frustum into the unit cube. It should be noted that there will be (a lot of) vertices for which it does not hold that their coordinates are between $-w'$ and $w'$ or $-1$ to $1$ after perceptive division. Those vertices are the ones outside the frustum given by the virtual camera; the ones the virtual camera cannot see. The implications of this will be acknowledged later.
+where $w' \not= 0$, because $v'$ is a point and not a vector. <br />
+This clip coordinates now get transformed into *normalized device coordinates* that range from $-1$ to $1$ for $x,y,z$ and are $1$ for $w$. <br />
+For this transformation, there is not more to do than dividing every coordinate by $w'$ (this is referred to as *perspective division* or *homogenization*).
 
-So, for every vertex $\vec{v}$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied from the left by $P \cdot V \cdot M$; thus $\vec{v'} = P \cdot V \cdot M \cdot \vec{v}$. And afterwards has to be normalized by $w'$.
+So, for every vertex $v$ to be transformed from the corresponding model coordinates into the normalized device coordinates, it simply has to be multiplied from the left by $P \cdot V \cdot M$; thus $v' = P \cdot V \cdot M \cdot v$. And afterwards has to be normalized by $w'$.
 
-Now every vertex is in normalized screen coordinates that range from $-1$ to $1$ (like mentioned above this range is not true for every vertex, but what happens here with those vertices shall not matter as they will be ignored later anyway). As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
+Now every vertex is in normalized screen coordinates that range from $-1$ to $1$. As a final step those coordinates are projected into *window/pixel coordinates*; this is called *viewport transformation*. Those window/pixel coordinates are defined in $[l,l+w] \times [b,b+h] \times [0,1]$, where
 * $l$ determines where on the left side of the monitor the image should start (i.e. how much room should be on the left side of the monitor screen); e.g. $l=0$ means the image starts at left border of the monitor screen
-* $b$ determines where on the bottom side of the monitor the image should start (i.e. how much room should be on the bottom side of the monitor screen); e.g. $b=0$ means the image starts at bootm border of the monitor screen
-* $w$ determine sthe width of the image
+* $b$ determines where on the bottom side of the monitor the image should start (i.e. how much room should be on the bottom side of the monitor screen); e.g. $b=0$ means the image starts at bootom border of the monitor screen
+* $w$ determines the width of the image
 * $h$ determines the height of the image
 
 This transformation is simply done by using the following matrix
@@ -778,17 +735,13 @@ This transformation is simply done by using the following matrix
 	0 & 0 & 0 & 1
 \end{bmatrix} 
 ```
-/TODO: matrix erklären? 
 
-After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates. If the vertices get connected back into triangles (*primitive assembly*), it is the same as transforming and projecting every point within that triangle themselves into the window/pixel coordinates. Thus what is now left is a set of *primitives* (here: triangles) in window/pixel coordinates. <br />
-Not all those primitives are, however, within the coordinate range of the screen. Some might not be in there at all, some might only partially be in there. This is, as mentioned earlier, due to not every vertex being in the view field of the virtual camera. All the parts that are not within the viewport range are now being *clipped*; hence why this step is called *clipping*. If only parts of a primitive got clipped in this step, the remains will get connected back into new triangles/new primitives. 
+After this last transformation every vertex's coordinates are in the final 2D window/pixel coordinates.<br />
 
-/TODO bild für clipping?
-
-As a next step all the primitives go through a step called *rasterization*. In this step the primitives get mapped into a raster that basically represents the pixel that the monitor will be displaying in the end. This process is quite complex and it is not even known how most graphic cards do it, however, how it is done is also not really important. The only thing that is important, is that at this point we have individual *pixel*, also referred to as *fragments*, that will be worked on. 
+As a next step all the traingles go through a step called *rasterization*. In this step the triangles get mapped into a raster that basically represents the pixel that the monitor will be displaying in the end. This process is quite complex and it is not even known how most graphic cards do it, however, how it is done is also not really important. The only thing that is important, is that at this point we have individual *pixel*, also referred to as *fragments*, that will be worked on. 
 
 In the last steps of the forward rendering pipeline these fragments will get shaded (i.e. it will be determined what color they have in the end) and it will be determined which fragments are even visible. Up until now all objects in the scene got looked at and then their parts that are not within the visual camera's frustum got discarded. However, it has not been considered yet what happens if one object is in front of another object within that frustum; it only makes sense if in the final image the front object can be seen and the other object is absent. <br />
-Checking which object gets displayed and which not is actually quite easy. In all the transformations and projections above, the $z$-value (depth value) never got discarded and has always been kept in a $0$ to $1$ range. Thus after the transformation and projections are done those values can simply be stored in a *z-buffer*. So, in the end, each fragment not only has a color value (after shading), but also a *depth value*. If two fragments are rasterized to the same monitor pixel now only their depth values have to be compared. The smaller the value, the closer to the virtual camera; hence the fragment with the lower depth value "wins" and gets displayed at the corresponding monitor pixel. 
+Checking which object gets displayed and which not is actually quite easy. In all the transformations and projections above, the $z$-value (depth value) never got discarded and has always been transformed into a $0$ to $1$ range. Thus after the transformation and projections are done those values can simply be stored in a *z-buffer*. So, in the end, each fragment not only has a color value (after shading), but also a *depth value*. If two fragments are rasterized to the same monitor pixel now only their depth values have to be compared. The smaller the value, the closer to the virtual camera; hence the fragment with the lower depth value "wins" and gets displayed at the corresponding monitor pixel. 
 
 
 
@@ -803,20 +756,18 @@ The virtual world a participant sees is called scene. This scene contains object
 The scene is anchored within a global coordinate system. In order to compare all objects with each other and project them from 3D space to 2D space, they have to "live" in the same coordinate system. Thus all the vertices coordinates get transformed from their respective local coordinate systems into the global coordinate system. For each object this is done using a world matrix $M$.
 
 <li>
-The camera is an object within the scene itself. In order to to make it easier to project from 3D space to 2D space, all coordinates get transformed in the camera coordinate system. This is done using the view matrix $V$.
+The camera is an object within the scene itself. In order to to make it easier to project from 3D space to 2D space, all coordinates get transformed into the camera coordinate system. This is done using the view matrix $V$.
 
 <li>	
 Now the coordinates are in the simplest form possible and can be projected from 3D space to 2D space. This is done by using the projection matrix $P$.
 
 <li>
-After the projection all coordinates are clip space coordinates. Clip space coordinates range from $-w'$ to $w'$, where $w'$ refers to the fourth coordinate of a corresponding vertex $v'$ (so for each vertex this range is different). Now perspective division happens: All coordinates of $v'$ get divided by $w'$, leaving them in the range $[-1,1]$. Those are called normalized device coordinates. They can now be transformed into the final window/pixel coordinates.
+After the projection all coordinates are clip space coordinates. Clip space coordinates range from $-w'$ to $w'$, where $w'$ refers to the fourth coordinate of a corresponding vertex $v'$ (so for each vertex this range is different). At this point clipping happens. Afterwards perspective division happens: All coordinates of $v'$ get divided by $w'$, leaving them in the range $[-1,1]$. Those are called normalized device coordinates. They can now be transformed into the final window/pixel coordinates.
 
 <li>	
-Now that all coordinates are in their "final form" a few things can happen. The vertices get connected back together into triangles (now also referred to as primitives). Everything that cannot be seen from the camera is being clipped (discarded). The remaining primitives go through rasterization (which basically maps the primitives to pixel on the monitor), shading and finally the test which once are even visible. This leaves us with the final image.	
+Now that all coordinates are in their "final form", rasterization, shading and visibility testing happen. This leaves us with the final image.	
 </ol>
 </details>
-
-/TODO Bild von pipeline?
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -834,50 +785,46 @@ The calculation of the individual motion vectors is now being done in two parts.
 The first part happens within a *vertex shader*. Every vertex within the scene gets send through the vertex shader. Inside the vertex shader it gets transformed and projected into clip space, this is done as explained <a href="#forward-rendering">here</a>. Thus the output is a vertex in clip space coordinates. Additionally the output can also contained more data, for example a color for the vertex or other vectors. This is quite practical, because it allows to pass additional data into the *fragment shader*. <br />
 As the name suggest the fragment shader works on the individual fragments that are obtained after rasterization. This is where the second part of calculating the motion vectors happens. The input of the fragment shader is a fragment with its corresponding window/pixel coordinates as well as the additional data from the vertex shader output. One important thing to note here is that not every vertex corresponds to a fragment. So in order to, for example, obtain the color of a fragment (if that is data the output of the vertex shader contains), barycentrical interpolation is being used. It is also possible to the set more values for each fragment, e.g. texture data (but this is not important for what needs to be done here). The output of the fragment shader is a color (RGBA) for each fragment. 
 
-/TODO bild für interpolation mit Fraben is einfach als erklären
-
 Onto the actual calculation of the motion vectors. 
 
 Each vertex gets passed into the vertex shader. In here the current clip space position of the vertex gets calculated. This done by using the corresponding matrices, like so
 ```math 
-\vec{v'} = P \cdot V \cdot M \cdot \vec{v}
+v' = P \cdot V \cdot M \cdot v
 ```
-where $\vec{v}$ refers to the 4D local coordinates of the vertex of the current frame. This is the same as the output of the vertex shader. However, because of the rasterization step, this data would be "lost" (i.e. not available in the fragment shader) if it is not set as additional data for the output of the vertex shader. <br />
+where $v$ refers to the 4D local coordinates of the vertex of the current frame. This is the same as the output of the vertex shader. However, because of the rasterization step, this data would be "lost" (i.e. not available in the fragment shader) if it is not set as additional data for the output of the vertex shader. <br />
 Inside the vertex shader the previous clip space potion of the vertex will be calculated as well. This is again done by using the corresponding matrices
 ```math 
-\vec{v'_{prev}} = P_{prev} \cdot V_{prev} \cdot M_{prev} \cdot \vec{v}
+v'_{prev} = P_{prev} \cdot V_{prev} \cdot M_{prev} \cdot v
 ```
-Here it is necessary to distinguished between two cases to get the meaning of $\vec{v}$. If the vertex did not move inside its local coordinate system (not the global one!) from the previous frame to the current frame, then $\vec{v}$ is simply defined as the 4D local coordinates of the vertex of the current frame. If however the vertex moved inside the local coordinate system from the previous frame to the current frame, $\vec{v}$ is defined as the 4D coordinates of the vertex of the previous frame (so its previous potions within the local coordinate system). $\vec{v'_{prev}}$ will also be part of the vertex shader output. <br />
+Here it is necessary to distinguished between two cases to get the meaning of $v$. If the vertex did not move inside its local coordinate system (not the global one!) from the previous frame to the current frame, then $v$ is simply defined as the 4D local coordinates of the vertex of the current frame. If however the vertex moved inside the local coordinate system from the previous frame to the current frame, $v$ is defined as the 4D coordinates of the vertex of the previous frame (so its previous potions within the local coordinate system). $v'_{prev}$ will also be part of the vertex shader output. <br />
 In conclusion the output of the vertex shader will contain the current positon of the vertex in clip space coordinates as well as the previous poisiton of the vertex in clip space coordinates.
 
 After the vertex shader, rasterization happens. Each fragment that comes out of this step will contains information about its current position in clip space coordinates and its previous potion in clip space coordinates. As explained above those coordinates might have been obtained via interpolation. Every fragment now gets passed into the fragment shader <br />
 Inside the fragment shader the current and the previous normalized device coordinates are being calculated. This is simply done by diving each coordinate through the corresponding $w$ coordinate.
 ```math 
-\vec{v''} = \frac{\vec{v'}.xyz}{\vec{v'}.w} 
+v'' = \frac{v'.xyz}{v'.w} 
 ```
 ```math 
-\vec{v''_{prev}} = \frac{\vec{v'_{prev}}.xyz}{\vec{v'_{prev}}.w}
+v''_{prev} = \frac{v'_{prev}.xyz}{v'_{prev}.w}
 ```
 
-$\vec{v''}$ and $\vec{v''_{prev}}$ are now both normalized device coordinates in a range from $-1$ to $1$. In order to handle them better they now get scaled into a the viewport range of $0$ to $1$.
+$v''$ and $v''_{prev}$ are now both normalized device coordinates in a range from $-1$ to $1$. In order to handle them better they now get scaled into a the viewport range of $0$ to $1$.
 ```math 
-\vec{v_{pos}} =\frac{\vec{v''} +1}{2} 
+v_{pos} =\frac{v'' +1}{2} 
 ```
 ```math 
-\vec{v_{prevPos}} =\frac{\vec{v''_{prev}} +1}{2}
+v_{prevPos} =\frac{v''_{prev} +1}{2}
 ```
 
-Those coordinates are all that is needed to calculate the motion vector for the current fragment. By just looking at all the explanation above, it might be hard to understand why this is the case. So, to put it simply, just look at what $\vec{v_{pos}}$ and $\vec{v_{prevPos}}$ stand for. <br />
-$\vec{v_{pos}}$ describes the position of a fragment (a pixel) within the *viewport space*. This space simple defines a square with the lower left coordinate of $(0,0)$ and the upper right coordinate $(1,1)$. So it is basically like the final window space (that can have the height and width of the monitor), but normalized. Thus $\vec{v_{pos}}$ simply defines where the currently looked at fragment is positioned within this square in the current frame. <br />
-Similarly, $\vec{v_{prevPos}}$ defines where the currently looked at fragment has been positioned within this square in the previous frame.
+Those coordinates are all that is needed to calculate the motion vector for the current fragment. By just looking at all the explanation above, it might be hard to understand why this is the case. So, to put it simply, just look at what $v_{pos}$ and $v_{prevPos}$ stand for. <br />
+$v_{pos}$ describes the position of a fragment (a pixel) within the *viewport space*. This space simple defines a square with the lower left coordinate of $(0,0)$ and the upper right coordinate $(1,1)$. So it is basically like the final window space (that can have the height and width of the monitor), but normalized. Thus $v_{pos}$ simply defines where the currently looked at fragment is positioned within this square in the current frame. <br />
+Similarly, $v_{prevPos}$ defines where the currently looked at fragment has been positioned within this square in the previous frame.
 
-So, quite frankly speaking, $\vec{v_{pos}}$ and $\vec{v_{prevPos}}$ tells us where a pixel was in the previous frame and where it is in this frame. (Note: The pixel on the screen however never really move, their colors just change. But for simplicity reasons just say they move when in reality the color simply gets displayed by a different pixel and it is more of a color moving than a pixel moving.)
-
-/TODO: bild von den ganzen kack spaces einfügen, gugn wie des mit dem movemnt besser erklärt werden kann (wahreschinlich aber nur in arbeit und end hier)
+So, quite frankly speaking, $v_{pos}$ and $v_{prevPos}$ tells us where a pixel was in the previous frame and where it is in this frame. (Note: The pixel on the screen however never really move, their colors just change. But for simplicity reasons just say they move when in reality the color simply gets displayed by a different pixel and it is more of a color moving than a pixel moving.)
 
 In order to now obtain the motion vector within the fragment shader, there is not mucch more left to do than simply subtract the previous position from the current position
 ```math 
-\vec{m} = \vec{v_{pos}} - \vec{v_{prevPos}} 
+\vec{m} = v_{pos} - v_{prevPos} 
 ```
 
 So, finally, we have $\vec{m}$, the motion vector for the current fragment/pixel! This vector can now, for example, be written and saved inside  a texture. Or it can be transformed into a color that corresponds to the direction and the magnitude of $m$. This color can be returned by the fragment shader and will than be displayed in the final image. Hence, the final image then shows for each pixel in which direction the pixel moved and how much it moved. An explanation of how to do this conversion is given below.
@@ -892,7 +839,7 @@ The information that the color should contain are the direction of the motion ve
 More precisely, the direction of the vector shall be displayed via a color. For example a red color means that the motion vector points to the right side of the screen and a cyab color means that the motion vector points to the left side of the screen. <br />
 The magnitude of the vector shall be displayed via the colors intensity/saturation. The more movement the higher the magnitude of the motion vector the more saturated the color. For example white means no movement at all (motion vector is zero, so magnitude is zero) and a vibrant red means a lot of movement (a high magnitude of the motion vector).
 
-Realizing this conversion from motion vector to color can be done with the help of the HSV color space. HSV stands for hue, value and saturation; so in this color space each color is represented using three values (similar to the RGB space). //TODO bild einfügen 
+Realizing this conversion from motion vector to color can be done with the help of the HSV color space. HSV stands for hue, value and saturation; so in this color space each color is represented using three values (similar to the RGB space). 
 * Hue *H* is given in the range $[0°,360°]$, so it is an angle. For example $0°$ corresponds to red and $180°$ corresponds to cyan. 
 * Saturation *S* is given in the range $[0,1]$. $0$ meaning no saturation at all (the final color is then basically a gray scale color) ans $1$ meaning totally saturated (so a very vibrant color). 
 * Value *V* is given in the range $[0,1]$. $0$ meaning the color si not light whatsoever (e.g. black) and $1$ meaning the color is totally lit (e.g. white)
@@ -916,7 +863,7 @@ and then
 ```math 
 H = \vec{m}.y > 0 \space ? \space \alpha \space : \space 360 - \alpha
 ```
-This requires a bit more explanation. The hue of a color is basically given as an angle within a unit circle if we set the origin of a coordinate system in the middle of this circle and draw a vector from the origin of the circle to the color we want (/TODO: Bild). This vector can be seen as the motion vector if it were normalized to a magnitude of $1$. For this vector $\vec{v}$ we could determine the angle relative to the x-axis by simply calculating 
+This requires a bit more explanation. The hue of a color is basically given as an angle within a unit circle if we set the origin of a coordinate system in the middle of this circle and draw a vector from the origin of the circle to the color we want. This vector can be seen as the motion vector if it were normalized to a magnitude of $1$. For this vector $\vec{v}$ we could determine the angle relative to the x-axis by simply calculating 
 ```math 
 \alpha = degrees \left( acos\left( \frac{\vec{v}.x}{1} \right)\right) 
 ```
@@ -938,9 +885,6 @@ With this algorithm it is now possible to map the motion vector of a fragment to
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-/TODO bio stuff ggf, da kann man dann vllt au sagenwas für info überhaupt eichtig (richtigung, stärke9 und es dann als überleitung zu was man darasteleln will mit frarben oder so
 
 ### Depth
 As the name suggests this effect visualizes the depth of the 3D scene on the 2D screen. So it shows which objects are closer to the participant's virtual camera/eyes and which are further away from the participant's virtual camera/eyes. This means for each pixel on the screen we need to know how far the corresponding object-point is away from the camera in the scene; hence we need the $z$-coordinate for each pixel on the screen.
