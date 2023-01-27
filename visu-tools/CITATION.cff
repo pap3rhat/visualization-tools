@@ -1,0 +1,20 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: visu-tools
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hannah
+    family-names: Schweizer
+repository-code: 'https://github.com/pap3rhat/visualization-tools'
+abstract: >-
+  Unity package that allows you to apply full screen
+  post-processing effects to your project in real time. Also
+  includes the option to record and later replay your
+  movement, as well as to export the motion vectors texture
+  and the depth texture to pngs.
+license: MIT
