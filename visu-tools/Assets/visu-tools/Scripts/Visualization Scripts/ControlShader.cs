@@ -146,7 +146,10 @@ public class ControlShader : MonoBehaviour
         // crucial part for single pass instanced rendering; taken from: https://forum.unity.com/threads/creating-image-effects-for-singlepass-stereo-rendering-with-multiple-shader-passes.710609/
         RenderTextureDescriptor desc;
         if (XRSettings.enabled)
+        {
             desc = XRSettings.eyeTextureDesc;
+            desc.width = desc.width / 2;
+        }
         else
             desc = new RenderTextureDescriptor(Screen.width, Screen.height); // Not XR
 

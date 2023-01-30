@@ -132,6 +132,8 @@ Shader "Optical/ImageFilter"
 	// here: neighbors on horizontal line through pixel
 	fixed4 fragH(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
@@ -147,6 +149,8 @@ Shader "Optical/ImageFilter"
 	// here: neighbors on vertical line through pixel
 	fixed4 fragV(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		float4 col = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv) * _Kernel[0];
 		for (int i = 1; i < _FinalKernelSize; i++)
 		{
@@ -161,6 +165,8 @@ Shader "Optical/ImageFilter"
 	// Fragment shader; determines final color for each pixel by subtracting blurred frame from "original" frame (realizes gaussian high-spass filter)
 	fixed4 fragHPF(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv);
 	}
 
@@ -169,6 +175,8 @@ Shader "Optical/ImageFilter"
 	// Fragment shader; determines final color for each pixel by subtracting blurred frame from "original" frame, weighting it and then adding it back to the original image (realizes image sharpening)
 	fixed4 fragSH(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) + _SharpeningFactor * (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_First, IN.uv) - UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, IN.uv));
 	}
 
@@ -178,6 +186,8 @@ Shader "Optical/ImageFilter"
 	// here: neighbors on line given by motion vector of pixel
 	fixed4 fragM(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		float2 diffVec = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).rg; // getting motion vector
 		diffVec *= unity_DeltaTime.y; // scaling vector so it's visible; making it frame-rate independent
 

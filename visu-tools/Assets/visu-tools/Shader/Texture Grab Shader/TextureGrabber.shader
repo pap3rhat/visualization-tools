@@ -51,6 +51,8 @@ Shader "Optical/TextureGrabber"
 	// fragment shader; just returns motion vector texture scaled by time.DeltaTime^-1
 	fixed4 fragM(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv) * unity_DeltaTime.y;
 	}
 
@@ -58,8 +60,9 @@ Shader "Optical/TextureGrabber"
 
 	// fragment shader; just returns depth texture made linear
 	fixed4 fragD(v2f IN) : SV_Target
-	{	 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
-		float eye = unity_StereoEyeIndex; // which eye is curretnly rendered? 0:left, 1:right
+	{	 
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		return Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, IN.uv));
 
 	}

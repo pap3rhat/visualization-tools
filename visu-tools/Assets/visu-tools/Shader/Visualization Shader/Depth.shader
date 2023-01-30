@@ -60,6 +60,8 @@ Shader "Optical/Depth"
 	// WARNING: For this to function properly the clipping planes of the camera must make sense for set-up!
 	fixed4 frag(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		float depth = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, IN.uv));
 		float3 lerped = lerp(_ColorNear, _ColorFar, depth); // determining color of pixel based on depth
 

@@ -55,6 +55,8 @@ Shader "Optical/MotionField"
 	// fragment shader; converts motionVector for each pixel into a color that will be displayed
 	fixed4 frag(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		// motion in x-direction is stored in the textures red channel, motion in y-direction is stored in the textures green channel
 		float2 motion= UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).rg;
 
@@ -71,6 +73,8 @@ Shader "Optical/MotionField"
 	// fragment shader; converts motionVector for each pixel into a color; will be displayed where high-pass filter found edges(high image frequencies)
 	fixed4 fragAHP(v2f IN) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
 		// motion in x-direction is stored in the textures red channel, motion in y-direction is stored in the textures green channel
 		float2 motion;
 		motion.x = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_CameraMotionVectorsTexture, IN.uv).r;
