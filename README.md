@@ -90,10 +90,10 @@ This repository basically consist of three parts.
 * The second part is a *.unitypackage* file called *visu-tools*. As the file ending suggest this file is a unity package and can be imported as such into a unity project. This package only contains the tools themselves, how they get incorporated into any given project is left to the user. As described above, *visu-tools project* serves as an example how one can incorporate them. From here on this part will be referenced by *visu-tools package*.
 * The third part is a *folder* called *build-visu-tools*. This folder contains a *.exe* file called *visu-tools*. This file is the finished build of the *visu-tools project* and can be explored without the Unity editor and any knowledge about it (just double left-click it). As it is basically the same as the *visu-tools project* everything non Unity editor related that applies to *visu-tools project* also applies to this build. Thus it will not be mentioned individually from here on.
 
-### Prerequisites
+### Prerequisites **IMPORTANT**
 Everything got implemented and tested using the Unity editor version *2021.3.12f1* and a simple 3D core project base using the *built-in render pipeline*. <br />
-XR support got tested using the Mock HMD Loader inside the Editor(!). Both render modes (multi pass, single pass instanced) were tested and functioning. The GUI elements in *visu-tools project* might not work with XR, however, as *visu-tools project* only shows an example usage, that is fine. <br />
-If anything does not work for you, be sure to check if your set-up is any different. Especially other render pipelines might have problems!
+XR support got tested using the Mock HMD Loader inside the Editor(!) and using a HTC vive headset. Both render modes (multi pass, single pass instanced) were tested, however only the multi pass mode is functioning for all shaders. Shaders that use *_CameraDepthTexture* or *_CameraDepthTexture* only render the correct image to the left eye. The screenshot function thus also only correctly works using multi pass rendering. The GUI elements in *visu-tools project* might not work with XR, however, as *visu-tools project* only shows an example usage, that is fine. <br />
+If anything does not work for you, be sure to check if your set-up is any different. Especially other render pipelines and single pass rendering might have problems!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
