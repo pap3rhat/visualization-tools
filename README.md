@@ -1,5 +1,3 @@
-ACHTUNG: Der build und das package sind aktuell nicht auf dem neusten Stand.
-
 [![Made with Unity](https://img.shields.io/badge/Made%20with-Unity-57b9d3.svg?style=for-the-badge&logo=unity)](https://unity3d.com) 
 <br />
 
@@ -60,7 +58,6 @@ Unity package that allows you to apply full screen post-processing effects to yo
 </li>
 </ul>
 <li><a href="#license">License</a></li>
-<li><a href="#acknowledgments">Acknowledgments</a></li>
 </ol>
 </details>
 
@@ -69,8 +66,8 @@ Unity package that allows you to apply full screen post-processing effects to yo
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This repository contains the code for my bachelor's thesis at University of Bielefeld in the winter semester 22/23. <br />
-The topic is: *"Entwicklung von Visualisierungswerkzeugen zur Auswertung von VR-Navigationsexperimenten beim Menschen"*(Development of visualization tools that can be used to evaluate vr-navigation-experiments performed by humans).
+This repository contains the code and some supplementary information (in german) for my bachelor's thesis at University of Bielefeld in the winter semester 22/23. <br />
+The topic is: *"Entwicklung von Visualisierungswerkzeugen zur Auswertung von VR-Navigationsexperimenten beim Menschen"*(Development of visualization tools that can be used to evaluate vr-navigation-experiments performed by humans). 
 
 More precisely the task was to find ways of visualizing "meta-data" that humans might use when navigating through a VR-world. This "meta-data" includes things such as how the environment moves in respect to oneself or how sharp/blurry one perceives parts of the environment. <br />
 The task also included creating a system to replay .CSV files that contain movement (position + orientation) data. In order to always have access to such files this project also contains a recorder. <br />
@@ -908,14 +905,5 @@ where $color$ stand for the final RGBA value of the fragment, $(255,255,255,1)$ 
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* Supervisors:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
